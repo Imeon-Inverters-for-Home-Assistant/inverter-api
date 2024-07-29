@@ -1,0 +1,5 @@
+# Ignore the entire folder named '__pycache__'
+__pycache__/
+
+# Ignore a specific file named '.pdm.toml'
+.pdm.toml
