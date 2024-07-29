@@ -1,0 +1,28 @@
+[project]
+name = "inverter_api"
+version = "0.1.0"
+description = "A standalone API to collect data from the Imeon Energy Inverters. Uses HTTP POST/GET."
+authors = [
+    {name = "Rodrigue Lemaire", email = "developpement@imeon-energy.com"},
+]
+dependencies = [
+    "aiohttp>=3.9.5",
+    "async-timeout>=4.0.3",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+#[project.urls]
+#Homepage = ""
+#Issues = ""
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool.pdm]
