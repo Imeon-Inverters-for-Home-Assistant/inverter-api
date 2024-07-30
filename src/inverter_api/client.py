@@ -210,7 +210,7 @@ class Client():
             # Handle timeout
             raise Exception("GET request timed out. Check the IP configuration of the inverter.")
     
-    # TOyDO post requests methods
+    # TODO post requests methods
 
     # ASYNC HANDLERS #
     def __del__(self):
@@ -245,7 +245,6 @@ class Client():
 """
 
 if __name__ == "__main__":
-    from client import Client
     import asyncio
     import json
 
