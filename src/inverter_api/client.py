@@ -67,8 +67,6 @@ class Client():
         await asyncio.sleep(max(self.BOTTLENECK_RATE - elapsed, 0))
 
         return task
-
-
     
     # IMEON API CALLS #
     @timed
@@ -106,6 +104,7 @@ class Client():
             # Handle timeout
             raise Exception("POST request timed out. Check the IP configuration of the inverter.")
     
+    @timed
     async def get_data_onetime(self):
         data = await self.get_data_instant("data")
         json = {}
@@ -184,6 +183,30 @@ class Client():
             raise Exception("GET request timed out. Check the IP configuration of the inverter.")
 
     @timed
+    async def get_data_manager(self, timeout: int = TIMEOUT) -> Dict[str, Any]: 
+        """Gather relay data from IMEON API using GET HTTP protocol."""
+        url = self._IP
+
+        if self.__session is None or self.__session.closed:
+            await self.init_session()
+        session = self.__session
+
+        # Build request payload
+        url = "http://" + url + "/api/manager"
+
+        task = await self.task(session.get, url, "")
+        try:
+            async with async_timeout.timeout(timeout):
+                async with task as response:
+                    return await response.json()
+        except aiohttp.ClientError as e:
+            # Handle client errors (e.g., connection issues)
+            raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
+        except asyncio.TimeoutError:
+            # Handle timeout
+            raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+
+    @timed
     async def get_data_instant(self, info_type: str = "data", timeout: int = TIMEOUT) -> Dict[str, Any]: 
         """Gather instant data from IMEON API using GET HTTP protocol."""
         assert info_type in ('data', 'scan', 'status'), "Valid info types are: 'data', 'scan', 'status'"
@@ -224,26 +247,6 @@ class Client():
         except Exception:
             pass # Let session close itself and generate an error
 
-
-"""
-    MINUTE DATA KEYS
-
-    battery_soc, battery_status, battery_stored, 
-
-    grid_voltage_phase_r, grid_voltage_s, grid_voltage_t, grid_current_phase_r, grid_current_s, grid_current_t, grid_frequency, 
-
-    pv_input_power1, pv_input_power_1, pv_input_power2, 
-
-    ac_input_active_power_r, ac_input_active_power_s, ac_input_active_power_t, ac_input_total_active_power, ac_output_voltage_phase_r,
-    ac_output_voltage_s, ac_output_voltage_t, ac_output_current_r, ac_output_current_s, ac_output_current_t, ac_output_active_power_r, \
-    
-    ac_output_active_power_s, ac_output_active_power_t, ac_output_total_active_power, ac_output_frequency,
-
-    em_status, em_power, em_power_sign,
-    
-    max_component_temperature, internal_temperature
-"""
-
 if __name__ == "__main__":
     import asyncio
     import json
@@ -254,7 +257,7 @@ if __name__ == "__main__":
 
         await c.login('user@local', 'password')
         data = await c.get_data_timed('hour')
-        data_inst = await c.get_data_onetime()
+        data_inst = await c.get_data_manager()
         data_monit = await c.get_data_monitoring()
         print(json.dumps(data, indent=2, sort_keys=True))
         print(json.dumps(data_inst, indent=2, sort_keys=True))

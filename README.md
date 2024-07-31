@@ -2,7 +2,7 @@
 
 [![GitHub Repository](https://img.shields.io/badge/-GitHub%20Repository-181717?logo=github)](https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api)
 [![PyPI version](https://badge.fury.io/py/inverter-api.svg)](https://pypi.org/project/inverter-api/)
-[![Website](https://img.shields.io/badge/-Imeon%20Energy-%2520?style=flat&label=Website&labelColor=white&color=black)](https://imeon-energy.com/)
+[![Website](https://img.shields.io/badge/-Imeon%20Energy-%2520?style=flat&label=Website&labelColor=grey&color=black)](https://imeon-energy.com/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-44cc11.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 A standalone API allowing communication with Imeon Energy inverters.
@@ -31,7 +31,7 @@ import inverter_api
 
 #
 ## Example
-Here's a short example to authenticate then fetch hourly data from a given inverter.
+Here's a short example to authenticate then fetch hourly data from a given inverter:
 ```python
 from inverter_api import Client
 import asyncio
