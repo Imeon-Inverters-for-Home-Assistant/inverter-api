@@ -1,13 +1,13 @@
 import aiohttp
 import async_timeout
 import asyncio
-from typing import Any, Dict, List
+from typing import Any, Dict, Callable
 from functools import wraps
 import time
 
 # credit to : https://dev.to/kcdchennai/python-decorator-to-measure-execution-time-54hk
-# Execution timer (adapted to async function calls)
-def timed(func):
+def timed(func: Callable):
+    """Measure time of execution for async functions."""
     @wraps(func)
     async def time_wrapper(*args, **kwargs):
         start_time = time.perf_counter()
@@ -20,12 +20,16 @@ def timed(func):
 
 class Client():
 
+    """
+    Client to connect to securely connect to the inverter and request data.
+    """
+
     TIMEOUT = 10
     BOTTLENECK = True # Bottleneck acts as Rate Limiter
     BOTTLENECK_SIZE = 1
     BOTTLENECK_RATE = 1.2
 
-    def __init__(self, ip):
+    def __init__(self, ip: str):
         self._IP : str = ip
         self.__session : aiohttp.ClientSession | None = None
         self._queue : asyncio.Queue = asyncio.Queue(self.BOTTLENECK_SIZE) 
@@ -53,9 +57,10 @@ class Client():
     
     @property
     async def _bottleneck(self):
+        """Place a timer in queue to slow down requests."""
         await self._queue.put(time.perf_counter())
     
-    async def task(self, func, url, data):
+    async def task(self, func: Callable, url: str, data: str):
         """Bottleneck the amount of requests sent out, in speed and volume."""
         await self._bottleneck
         task = await func(url, data=data)
@@ -63,7 +68,7 @@ class Client():
         end_time = time.perf_counter()
 
         elapsed = end_time - start_time
-        print(elapsed)
+        #print(elapsed)
         await asyncio.sleep(max(self.BOTTLENECK_RATE - elapsed, 0))
 
         return task
@@ -106,6 +111,7 @@ class Client():
     
     @timed
     async def get_data_onetime(self):
+        """Gather one-time data from IMEON API using GET HTTP protocol."""
         data = await self.get_data_instant("data")
         json = {}
         json["inverter"] = data["type"]
@@ -115,10 +121,15 @@ class Client():
         json["injection-power-limit"] = data["injection_power"]
         return json
 
-    # Caution: this call is quite slow (around 3 seconds)
     @timed
     async def get_data_timed(self, time: str = 'minute', timeout: int = TIMEOUT) -> Dict[str, Any]: 
-        """Gather minute data from IMEON API using GET HTTP protocol."""
+        """
+        Gather minute data from IMEON API using GET HTTP protocol.
+        
+            Note: this call is quite slow even without rate limiting, use
+                  get_data_instant() if you're interested in collecting
+                  a lot of data at once.
+        """
         assert time in ('minute', 'quarter', 'hour','day', 'week', 'month', 'year'), \
             "Valid times are: 'minute', 'quarter', 'hour', 'day', 'week', 'month', 'year'"
         url = self._IP
@@ -159,8 +170,14 @@ class Client():
         return json
 
     @timed
-    async def get_data_monitoring(self, timeout: int = TIMEOUT) -> Dict[str, Any]: 
-        """Gather monitoring data from IMEON API using GET HTTP protocol."""
+    async def get_data_monitoring(self, time="day", timeout: int = TIMEOUT) -> Dict[str, Any]: 
+        """
+        Gather monitoring data from IMEON API using GET HTTP protocol.
+        
+            Note: this is mostly meant to be used for a supervision screen,
+                  so using time intervals longer than hours is recommended
+                  for more sensible data collection.
+        """
         url = self._IP
 
         if self.__session is None or self.__session.closed:
@@ -168,7 +185,7 @@ class Client():
         session = self.__session
 
         # Build request payload
-        url = "http://" + url + "/api/monitor"
+        url = "http://" + url + "/api/monitor?time={}".format(time)
 
         task = await self.task(session.get, url, "")
         try:
@@ -184,7 +201,7 @@ class Client():
 
     @timed
     async def get_data_manager(self, timeout: int = TIMEOUT) -> Dict[str, Any]: 
-        """Gather relay data from IMEON API using GET HTTP protocol."""
+        """Gather relay and state data from IMEON API using GET HTTP protocol."""
         url = self._IP
 
         if self.__session is None or self.__session.closed:
@@ -208,7 +225,13 @@ class Client():
 
     @timed
     async def get_data_instant(self, info_type: str = "data", timeout: int = TIMEOUT) -> Dict[str, Any]: 
-        """Gather instant data from IMEON API using GET HTTP protocol."""
+        """
+        Gather instant data from IMEON API using GET HTTP protocol.
+        
+            Note: this gathers a large amount of instant data at once,
+                  it is advised to only use this when you need all
+                  the collected data quickly.
+        """
         assert info_type in ('data', 'scan', 'status'), "Valid info types are: 'data', 'scan', 'status'"
         url = self._IP
 
@@ -237,7 +260,7 @@ class Client():
 
     # ASYNC HANDLERS #
     def __del__(self):
-        """Close connection when this object is destroyed."""
+        """Close client connection when this object is destroyed."""
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():

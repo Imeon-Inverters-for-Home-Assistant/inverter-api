@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module inverter</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">inverter</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:/home/user/Documents/git-dev/orga/standalone-api/src/inverter_api/inverter.py">/home/user/Documents/git-dev/orga/standalone-api/src/inverter_api/inverter.py</a></td></tr></table>
+    <p></p>
+<p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="builtins.html#object">builtins.object</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="inverter.html#Inverter">Inverter</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="Inverter">class <strong>Inverter</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Inverter">Inverter</a>(address:&nbsp;str)<br>
+&nbsp;<br>
+Client&nbsp;data&nbsp;organised&nbsp;as&nbsp;a&nbsp;class&nbsp;storing&nbsp;the&nbsp;collected&nbsp;data,&nbsp;<br>
+with&nbsp;methods&nbsp;allowing&nbsp;periodical&nbsp;updates.&nbsp;Meant&nbsp;for&nbsp;use&nbsp;in<br>
+supervision&nbsp;tools&nbsp;(such&nbsp;as&nbsp;Home&nbsp;Assistant).<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Note:&nbsp;for&nbsp;manual&nbsp;access,&nbsp;here's&nbsp;the&nbsp;storage&nbsp;structure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.<strong>_storage</strong>&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"battery"&nbsp;:&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"grid":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"pv":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"input":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"output":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"meter":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"temp":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"monitoring":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"manager":&nbsp;{},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"inverter":&nbsp;{}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Methods defined here:<br>
+<dl><dt><a name="Inverter-__init__"><strong>__init__</strong></a>(self, address: str)</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
+
+<dl><dt>async <a name="Inverter-init"><strong>init</strong></a>(self)</dt><dd><span class="code">Request&nbsp;a&nbsp;data&nbsp;initialisation&nbsp;from&nbsp;the&nbsp;Client.&nbsp;Collects&nbsp;"one-time"&nbsp;data.</span></dd></dl>
+
+<dl><dt>async <a name="Inverter-login"><strong>login</strong></a>(self, username: str, password: str)</dt><dd><span class="code">Request&nbsp;client&nbsp;login.&nbsp;See&nbsp;Client&nbsp;documentation&nbsp;for&nbsp;more&nbsp;details.</span></dd></dl>
+
+<dl><dt>async <a name="Inverter-update"><strong>update</strong></a>(self)</dt><dd><span class="code">Request&nbsp;a&nbsp;data&nbsp;update&nbsp;from&nbsp;the&nbsp;Client.&nbsp;Replaces&nbsp;older&nbsp;data,&nbsp;but&nbsp;doesn't&nbsp;affect&nbsp;"one-time"&nbsp;data.</span></dd></dl>
+
+<hr>
+Readonly properties defined here:<br>
+<dl><dt><strong>battery</strong></dt>
+</dl>
+<dl><dt><strong>grid</strong></dt>
+</dl>
+<dl><dt><strong>input</strong></dt>
+</dl>
+<dl><dt><strong>manager</strong></dt>
+</dl>
+<dl><dt><strong>meter</strong></dt>
+</dl>
+<dl><dt><strong>monitoring</strong></dt>
+</dl>
+<dl><dt><strong>output</strong></dt>
+</dl>
+<dl><dt><strong>pv</strong></dt>
+</dl>
+<dl><dt><strong>temp</strong></dt>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</span></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

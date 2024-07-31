@@ -1,6 +1,6 @@
 [project]
 name = "inverter_api"
-version = "0.1.2"
+version = "0.1.3"
 description = "A standalone API to collect data from the Imeon Energy Inverters. Uses HTTP POST/GET."
 authors = [
     {name = "Rodrigue Lemaire", email = "developpement@imeon-energy.com"},
@@ -11,7 +11,7 @@ dependencies = [
 ]
 requires-python = ">=3.11"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
