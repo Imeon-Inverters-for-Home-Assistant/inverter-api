@@ -1,4 +1,4 @@
-from client import Client
+from .client import Client
 
 class Inverter():
 
@@ -108,6 +108,9 @@ class Inverter():
     
     @property
     def manager(self): return self._storage.get("manager", {})
+
+    @property
+    def inverter(self): return self._storage.get("inverter", {})
     
             
 if __name__ == "__main__":
