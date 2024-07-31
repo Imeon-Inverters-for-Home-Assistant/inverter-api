@@ -1,4 +1,4 @@
-from .client import Client
+from inverter_api.client import Client
 
 class Inverter():
 
@@ -73,8 +73,8 @@ class Inverter():
     async def init(self):
         """Request a data initialisation from the Client. Collects "one-time" data."""
         try:
-            self.update()
-            data_inverter = self._client.get_data_onetime()
+            await self.update()
+            data_inverter = await self._client.get_data_onetime()
         except Exception as e:
             raise e
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     async def _test():
         i = Inverter("192.168.200.110")
         await i.login("user@local", "password")
-        await i.update()
+        await i.init()
         print(json.dumps(i._storage, indent=2, sort_keys=True))
         print(i.battery)
 
