@@ -1,6 +1,6 @@
 [project]
 name = "inverter_api"
-version = "0.1.4"
+version = "0.1.5"
 description = "A standalone API to collect data from the Imeon Energy Inverters. Uses HTTP POST/GET."
 authors = [
     {name = "Rodrigue Lemaire", email = "developpement@imeon-energy.com"},
@@ -20,6 +20,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api"
 Issues = "https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api/issues"
+Documentation = "https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api/wiki"
 
 [build-system]
 requires = ["pdm-pep517>=1.0.0"]

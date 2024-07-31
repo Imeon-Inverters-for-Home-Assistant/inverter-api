@@ -1,7 +1,7 @@
 # Imeon Inverter Standalone API
 
 [![GitHub Repository](https://img.shields.io/badge/-GitHub%20Repository-181717?logo=github)](https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api)
-[![PyPI version](https://img.shields.io/badge/-PyPI%20package-%20?style=flat&logo=pypi&logoColor=white&color=%233775A9)](https://pypi.org/project/inverter-api/)
+[![PyPI Package](https://img.shields.io/badge/-PyPI%20Package-%20?style=flat&logo=pypi&logoColor=white&color=%233775A9)](https://pypi.org/project/inverter-api/)
 [![Website](https://img.shields.io/badge/-Imeon%20Energy-%2520?style=flat&label=Website&labelColor=grey&color=black)](https://imeon-energy.com/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-44cc11.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -29,28 +29,7 @@ You can then simply use the package like this:
 import inverter_api
 ```
 
-#
-## Example
-Here's a short example to authenticate then fetch hourly data from a given inverter:
-```python
-from inverter_api import Client
-import asyncio
-import json
 
-# Display hourly data as a dict
-async def dataset_test() -> dict:
+## Wiki
 
-    # Create a client for the address of the inverter
-    c = Client("192.168.200.110")
-
-    # Async authentification
-    await c.login('user@local', 'password')
-
-    # Fetch hourly data from the inverter
-    data = await c.get_data_timed('hour')
-
-    # Format the dict and print it
-    print(json.dumps(data, indent=2, sort_keys=True))
-
-asyncio.run(dataset_test())
-```
+For documentation and some examples, please consult this project's **[wiki](https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api/wiki)**.
