@@ -6,6 +6,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-44cc11.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 A standalone API allowing communication with Imeon Energy inverters.
+> previously under the generic name inverter_api
 #
 
 ### Features

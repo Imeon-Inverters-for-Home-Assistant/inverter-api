@@ -1,5 +1,5 @@
 [project]
-name = "inverter_api"
+name = "imeon_inverter_api"
 version = "0.1.7"
 description = "A standalone API to collect data from the Imeon Energy Inverters. Uses HTTP POST/GET."
 authors = [

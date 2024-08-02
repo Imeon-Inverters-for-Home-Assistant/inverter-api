@@ -1,4 +1,4 @@
-from inverter_api.client import Client
+from imeon_inverter_api.client import Client
 
 class Inverter():
 
