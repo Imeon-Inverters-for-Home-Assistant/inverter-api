@@ -1,7 +1,7 @@
 # Imeon Inverter Standalone API
 
 [![GitHub Repository](https://img.shields.io/badge/-GitHub%20Repository-181717?logo=github)](https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api)
-[![PyPI Package](https://img.shields.io/badge/-PyPI%20Package-%20?style=flat&logo=pypi&logoColor=white&color=%233775A9)](https://pypi.org/project/inverter-api/)
+[![PyPI Package](https://img.shields.io/badge/-PyPI%20Package-%20?style=flat&logo=pypi&logoColor=white&color=%233775A9)](https://pypi.org/project/imeon-inverter-api/)
 [![Website](https://img.shields.io/badge/-Imeon%20Energy-%2520?style=flat&label=Website&labelColor=grey&color=black)](https://imeon-energy.com/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-44cc11.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -23,11 +23,11 @@ A standalone API allowing communication with Imeon Energy inverters.
 You can install the package using pip:
 
 ```bash
-pip install inverter_api
+pip install imeon_inverter_api
 ```
 You can then simply use the package like this:
 ```python
-import inverter_api
+import imeon_inverter_api
 ```
 
 
