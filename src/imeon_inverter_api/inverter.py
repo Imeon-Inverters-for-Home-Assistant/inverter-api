@@ -1,4 +1,5 @@
 from imeon_inverter_api.client import Client
+from json import loads
 
 class Inverter():
 
@@ -59,16 +60,13 @@ class Inverter():
             data_manager = await client.get_data_manager()
         except Exception as e:
             raise e
+        
+        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter"]:
+            storage[key] = loads(data_timed.get(key, {}).get("result", {}))
 
-        storage["battery"] = data_timed.get("battery", {})
-        storage["grid"] = data_timed.get("grid", {})
-        storage["pv"] = data_timed.get("pv", {})
-        storage["input"] = data_timed.get("input", {})
-        storage["output"] = data_timed.get("output", {})
-        storage["temp"] = data_timed.get("temp", {})
-        storage["meter"] = data_timed.get("meter", {})
-        storage["monitoring"] = data_monitoring
-        storage["manager"] = data_manager
+        storage["monitoring"] = loads(data_monitoring.get("result", {}))
+        storage["manager"] = loads(data_manager.get("result", {}))
+
     
     async def init(self):
         """Request a data initialisation from the Client. Collects "one-time" data."""
@@ -79,8 +77,6 @@ class Inverter():
             raise e
 
         self._storage["inverter"] = data_inverter
-
-    # TODO one time data !! and an init()
 
     @property
     def battery(self): return self._storage.get("battery", {})
@@ -119,10 +115,9 @@ if __name__ == "__main__":
 
     # Tests
     async def _test():
-        i = Inverter("192.168.200.110")
+        i = Inverter("192.168.200.86")
         await i.login("user@local", "password")
         await i.init()
         print(json.dumps(i._storage, indent=2, sort_keys=True))
-        print(i.battery)
 
     asyncio.run(_test())

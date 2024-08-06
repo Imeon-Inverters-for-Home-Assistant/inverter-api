@@ -117,8 +117,8 @@ class Client():
         json["inverter"] = data["type"]
         json["software"] = data["software"]
         json["serial"] = data["serial"]
-        json["charging-current-limit"] = data["max_ac_charging_current"]
-        json["injection-power-limit"] = data["injection_power"]
+        json["charging_current_limit"] = data["max_ac_charging_current"]
+        json["injection_power_limit"] = data["injection_power"]
         return json
 
     @timed
@@ -276,14 +276,18 @@ if __name__ == "__main__":
 
     # Tests
     async def dataset_test() -> dict:
-        c = Client("192.168.200.110")
+        c = Client("192.168.200.86")
 
         await c.login('user@local', 'password')
-        data = await c.get_data_timed('hour')
-        data_inst = await c.get_data_manager()
-        data_monit = await c.get_data_monitoring()
-        print(json.dumps(data, indent=2, sort_keys=True))
-        print(json.dumps(data_inst, indent=2, sort_keys=True))
-        print(json.dumps(data_monit, indent=2, sort_keys=True))
+
+        data = []
+        data.append(await c.get_data_onetime())
+        data.append(await c.get_data_timed('hour'))
+        data.append(await c.get_data_manager())
+        data.append(await c.get_data_monitoring())
+
+        for datum in data:
+            print(json.dumps(datum, indent=2, sort_keys=True))
+
 
     asyncio.run(dataset_test())
