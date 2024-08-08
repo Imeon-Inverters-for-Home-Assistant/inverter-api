@@ -63,7 +63,11 @@ class Client():
     async def task(self, func: Callable, url: str, data: str):
         """Bottleneck the amount of requests sent out, in speed and volume."""
         await self._bottleneck
-        task = await func(url, data=data)
+
+        try:
+            task = await func(url, data=data)
+        except Exception as e:
+            raise Exception(f"Task {func} failed: {e} \nRequest @ {url}")
         start_time = await self._queue.get()
         end_time = time.perf_counter()
 
@@ -92,8 +96,9 @@ class Client():
             "passwd": password
         }
 
-        task = await self.task(session.post, url, data)
         try:
+            task = await self.task(session.post, url, data)
+
             async with async_timeout.timeout(timeout):
                 async with task as response:
                     json = await response.json()
@@ -108,6 +113,8 @@ class Client():
         except asyncio.TimeoutError:
             # Handle timeout
             raise Exception("POST request timed out. Check the IP configuration of the inverter.")
+        except Exception as e:
+                raise Exception(f"POST request failed: {e} \nRequest @ {url}")
     
     @timed
     async def get_data_onetime(self):
@@ -153,9 +160,10 @@ class Client():
 
         # Loop through the requests
         for key, url in urls.items():
-            task = await self.task(session.get, url + suffix, "")
-            json[key] = {}
             try:
+                task = await self.task(session.get, url + suffix, "")
+                json[key] = {}
+            
                 async with async_timeout.timeout(timeout):
                     async with task as response:
                         #return await response.json()
@@ -166,6 +174,8 @@ class Client():
             except asyncio.TimeoutError:
                 # Handle timeout
                 raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+            except Exception as e:
+                raise Exception(f"GET request failed: {e} \nRequest @ {url}")
         
         return json
 
@@ -187,8 +197,9 @@ class Client():
         # Build request payload
         url = "http://" + url + "/api/monitor?time={}".format(time)
 
-        task = await self.task(session.get, url, "")
         try:
+            task = await self.task(session.get, url, "")
+        
             async with async_timeout.timeout(timeout):
                 async with task as response:
                     return await response.json()
@@ -198,6 +209,8 @@ class Client():
         except asyncio.TimeoutError:
             # Handle timeout
             raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+        except Exception as e:
+            raise Exception(f"GET request failed: {e} \nRequest @ {url}")
 
     @timed
     async def get_data_manager(self, timeout: int = TIMEOUT) -> Dict[str, Any]: 
@@ -211,8 +224,9 @@ class Client():
         # Build request payload
         url = "http://" + url + "/api/manager"
 
-        task = await self.task(session.get, url, "")
         try:
+            task = await self.task(session.get, url, "")
+        
             async with async_timeout.timeout(timeout):
                 async with task as response:
                     return await response.json()
@@ -222,6 +236,8 @@ class Client():
         except asyncio.TimeoutError:
             # Handle timeout
             raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+        except Exception as e:
+            raise Exception(f"GET request failed: {e} \nRequest @ {url}")
 
     @timed
     async def get_data_instant(self, info_type: str = "data", timeout: int = TIMEOUT) -> Dict[str, Any]: 
@@ -244,8 +260,9 @@ class Client():
                 "scan"  : "http://" + url + "/scan?scan_time=&single=true",
                 "status": "http://" + url + "/imeon-status"} 
         
-        task = await self.task(session.get, urls[info_type], data="")
         try:
+            task = await self.task(session.get, urls[info_type], data="")
+        
             async with async_timeout.timeout(timeout):
                 async with task as response:
                     return await response.json()
@@ -255,6 +272,8 @@ class Client():
         except asyncio.TimeoutError:
             # Handle timeout
             raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+        except Exception as e:
+            raise Exception(f"GET request failed: {e} \nRequest @ {url}")
     
     # TODO post requests methods
 
@@ -267,8 +286,8 @@ class Client():
                 loop.create_task(self.close_session())
             else:
                 loop.run_until_complete(self.close_session())
-        except Exception:
-            pass # Let session close itself and generate an error
+        except Exception as e:
+            raise e # Let session close itself and generate an error
 
 if __name__ == "__main__":
     import asyncio

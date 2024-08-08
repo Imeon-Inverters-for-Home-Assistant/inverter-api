@@ -78,6 +78,10 @@ class Inverter():
 
         self._storage["inverter"] = data_inverter
 
+    async def get_address(self):
+        """Returns client IP."""
+        return self._client._IP
+
     @property
     def battery(self): return self._storage.get("battery", {})
 
