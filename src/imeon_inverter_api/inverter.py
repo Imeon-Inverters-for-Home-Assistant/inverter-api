@@ -1,5 +1,7 @@
-from imeon_inverter_api.client import Client
-from json import loads
+if __name__ == "__main__": 
+    from client import Client
+else:
+    from imeon_inverter_api.client import Client
 
 class Inverter():
 
@@ -19,7 +21,8 @@ class Inverter():
                     "temp": {},
                     "monitoring": {},
                     "manager": {},
-                    "inverter": {}
+                    "inverter": {},
+                    "timeline": [{}]
                 }
     """
 
@@ -36,11 +39,12 @@ class Inverter():
             "temp": {},
             "monitoring": {},
             "manager": {},
-            "inverter": {}
+            "inverter": {},
+            "timeline": [{}]
         }
         return None
     
-    async def login(self, username: str, password: str):
+    async def login(self, username: str, password: str) -> None:
         """Request client login. See Client documentation for more details."""
         if self.__auth_valid == False:
             try:
@@ -49,7 +53,7 @@ class Inverter():
             except Exception as e:
                 raise Exception(f"Error while checking credentials: {e}")
             
-    async def update(self):
+    async def update(self) -> None:
         """Request a data update from the Client. Replaces older data, but doesn't affect "one-time" data."""
         storage = self._storage
         client = self._client
@@ -58,17 +62,19 @@ class Inverter():
             data_timed = await client.get_data_timed()
             data_monitoring = await client.get_data_monitoring()
             data_manager = await client.get_data_manager()
+            data_timeline = await client.get_data_timeline()
         except Exception as e:
             raise e
         
         for key in ["battery", "grid", "pv", "input", "output", "temp", "meter"]:
-            storage[key] = loads(data_timed.get(key, {}).get("result", {}))
+            storage[key] = data_timed.get(key, {}).get("result", {})
 
-        storage["monitoring"] = loads(data_monitoring.get("result", {}))
-        storage["manager"] = loads(data_manager.get("result", {}))
+        storage["monitoring"] = data_monitoring.get("result", {})
+        storage["manager"] = data_manager.get("result", {})
+        storage["timeline"] = data_timeline
 
     
-    async def init(self):
+    async def init(self) -> None:
         """Request a data initialisation from the Client. Collects "one-time" data."""
         try:
             await self.update()
@@ -78,7 +84,7 @@ class Inverter():
 
         self._storage["inverter"] = data_inverter
 
-    async def get_address(self):
+    async def get_address(self) -> str | None:
         """Returns client IP."""
         return self._client._IP
 
@@ -111,6 +117,9 @@ class Inverter():
 
     @property
     def inverter(self): return self._storage.get("inverter", {})
+
+    @property
+    def timeline(self): return self._storage.get("timeline", [{}])
     
             
 if __name__ == "__main__":

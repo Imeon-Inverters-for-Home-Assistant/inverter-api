@@ -1,20 +1,21 @@
 import aiohttp
 import async_timeout
 import asyncio
-from typing import Any, Dict, Callable
+from typing import Any, Dict, Callable, List
 from functools import wraps
 import time
+from json import loads, dumps
 
 # credit to : https://dev.to/kcdchennai/python-decorator-to-measure-execution-time-54hk
-def timed(func: Callable):
+def timed(func: Callable) -> Callable:
     """Measure time of execution for async functions."""
     @wraps(func)
-    async def time_wrapper(*args, **kwargs):
+    async def time_wrapper(*args, **kwargs) -> Any | None:
         start_time = time.perf_counter()
         result = await func(*args, **kwargs)
         end_time = time.perf_counter()
         total_time = end_time - start_time
-        print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        print(f'Function {func.__qualname__}{args} {kwargs} Took {total_time:.4f} seconds')
         return result
     return time_wrapper
 
@@ -34,21 +35,21 @@ class Client():
         self.__session : aiohttp.ClientSession | None = None
         self._queue : asyncio.Queue = asyncio.Queue(self.BOTTLENECK_SIZE) 
 
-    async def get_session(self):
+    async def get_session(self) -> aiohttp.ClientSession | None:
         """Get the currently saved session."""
         return self.__session
 
-    async def init_session(self):
+    async def init_session(self) -> None:
         """Initialize the aiohttp session."""
         if self.__session is None or self.__session.closed:
             self.__session = aiohttp.ClientSession()
     
-    async def close_session(self):
+    async def close_session(self) -> None:
         """Close the aiohttp session."""
         if self.__session and not self.__session.closed:
             await self.__session.close()
 
-    def get_session_cookies(self) -> dict:
+    def get_session_cookies(self) -> Dict[Any, None]:
         """Get the authentication cookies for this session."""
         cookies = {}
         for cookie in self.__session.cookie_jar:
@@ -56,11 +57,11 @@ class Client():
         return cookies
     
     @property
-    async def _bottleneck(self):
+    async def _bottleneck(self) -> None:
         """Place a timer in queue to slow down requests."""
         await self._queue.put(time.perf_counter())
     
-    async def task(self, func: Callable, url: str, data: str):
+    async def task(self, func: Callable, url: str, data: str) -> Any | None:
         """Bottleneck the amount of requests sent out, in speed and volume."""
         await self._bottleneck
 
@@ -117,7 +118,7 @@ class Client():
                 raise Exception(f"POST request failed: {e} \nRequest @ {url}")
     
     @timed
-    async def get_data_onetime(self):
+    async def get_data_onetime(self) -> Dict[str, float]:
         """Gather one-time data from IMEON API using GET HTTP protocol."""
         data = await self.get_data_instant("data")
         json = {}
@@ -127,9 +128,17 @@ class Client():
         json["charging_current_limit"] = data["max_ac_charging_current"]
         json["injection_power_limit"] = data["injection_power"]
         return json
+    
+    @timed
+    async def get_data_timeline(self) -> List[Dict[str, None]]:
+        """Gather timeline data from IMEON API using GET HTTP protocol."""
+        data = await self.get_data_instant("status")
+        list = data.get("state_timeline", {}).get("detail", [{}])
+        return list
 
     @timed
-    async def get_data_timed(self, time: str = 'minute', timeout: int = TIMEOUT) -> Dict[str, Any]: 
+    async def get_data_timed(self, time: str = 'minute', 
+                             timeout: int = TIMEOUT) -> Dict[str, float] | None: 
         """
         Gather minute data from IMEON API using GET HTTP protocol.
         
@@ -168,6 +177,7 @@ class Client():
                     async with task as response:
                         #return await response.json()
                         json[key] = await response.json()
+                        json[key]["result"] = loads(json[key]["result"])
             except aiohttp.ClientError as e:
                 # Handle client errors (e.g., connection issues)
                 raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
@@ -180,7 +190,8 @@ class Client():
         return json
 
     @timed
-    async def get_data_monitoring(self, time="day", timeout: int = TIMEOUT) -> Dict[str, Any]: 
+    async def get_data_monitoring(self, time="day", 
+                                  timeout: int = TIMEOUT) -> Dict[str, float] | None: 
         """
         Gather monitoring data from IMEON API using GET HTTP protocol.
         
@@ -202,7 +213,9 @@ class Client():
         
             async with async_timeout.timeout(timeout):
                 async with task as response:
-                    return await response.json()
+                    json = await response.json()
+                    json["result"] = loads(json["result"])
+                    return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
             raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
@@ -213,7 +226,7 @@ class Client():
             raise Exception(f"GET request failed: {e} \nRequest @ {url}")
 
     @timed
-    async def get_data_manager(self, timeout: int = TIMEOUT) -> Dict[str, Any]: 
+    async def get_data_manager(self, timeout: int = TIMEOUT) -> Dict[str, float] | None: 
         """Gather relay and state data from IMEON API using GET HTTP protocol."""
         url = self._IP
 
@@ -229,7 +242,9 @@ class Client():
         
             async with async_timeout.timeout(timeout):
                 async with task as response:
-                    return await response.json()
+                    json = await response.json()
+                    json["result"] = loads(json["result"])
+                    return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
             raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
@@ -240,7 +255,8 @@ class Client():
             raise Exception(f"GET request failed: {e} \nRequest @ {url}")
 
     @timed
-    async def get_data_instant(self, info_type: str = "data", timeout: int = TIMEOUT) -> Dict[str, Any]: 
+    async def get_data_instant(self, info_type: str = "data", 
+                               timeout: int = TIMEOUT) -> Dict[str, Any] | Any | None: 
         """
         Gather instant data from IMEON API using GET HTTP protocol.
         
@@ -265,7 +281,8 @@ class Client():
         
             async with async_timeout.timeout(timeout):
                 async with task as response:
-                    return await response.json()
+                    json = await response.json()
+                    return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
             raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
@@ -278,7 +295,7 @@ class Client():
     # TODO post requests methods
 
     # ASYNC HANDLERS #
-    def __del__(self):
+    def __del__(self) -> None:
         """Close client connection when this object is destroyed."""
         try:
             loop = asyncio.get_event_loop()
@@ -287,7 +304,7 @@ class Client():
             else:
                 loop.run_until_complete(self.close_session())
         except Exception as e:
-            raise e # Let session close itself and generate an error
+            pass # Let session close itself and generate an error
 
 if __name__ == "__main__":
     import asyncio
@@ -304,9 +321,10 @@ if __name__ == "__main__":
         data.append(await c.get_data_timed('hour'))
         data.append(await c.get_data_manager())
         data.append(await c.get_data_monitoring())
+        data.append(await c.get_data_timeline())
 
         for datum in data:
-            print(json.dumps(datum, indent=2, sort_keys=True))
-
+            d = dumps(datum, indent=2, sort_keys=True)
+            print(d)
 
     asyncio.run(dataset_test())
