@@ -60,7 +60,7 @@ class Inverter():
 
         try: 
             data_timed = await client.get_data_timed()
-            data_monitoring = await client.get_data_monitoring()
+            data_monitoring = await client.get_data_monitoring(time='hour')
             data_monitoring_minute = await client.get_data_monitoring(time='minute')
             data_manager = await client.get_data_manager()
             data_timeline = await client.get_data_timeline()
