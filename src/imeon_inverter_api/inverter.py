@@ -61,6 +61,7 @@ class Inverter():
         try: 
             data_timed = await client.get_data_timed()
             data_monitoring = await client.get_data_monitoring()
+            data_monitoring_minute = await client.get_data_monitoring(time='minute')
             data_manager = await client.get_data_manager()
             data_timeline = await client.get_data_timeline()
         except Exception as e:
@@ -70,6 +71,7 @@ class Inverter():
             storage[key] = data_timed.get(key, {}).get("result", {})
 
         storage["monitoring"] = data_monitoring.get("result", {})
+        storage["monitoring_minute"] = data_monitoring_minute.get("result", {})
         storage["manager"] = data_manager.get("result", {})
         storage["timeline"] = data_timeline
 
