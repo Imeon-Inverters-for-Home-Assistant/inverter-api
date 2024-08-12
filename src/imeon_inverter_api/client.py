@@ -43,6 +43,13 @@ class Client():
         """Initialize the aiohttp session."""
         if self.__session is None or self.__session.closed:
             self.__session = aiohttp.ClientSession()
+
+    async def keep_session_alive(self) -> None:
+        """Initialize the aiohttp session."""
+        if self.__session.closed:
+            cookies = self.get_session_cookies()
+            self.__session = aiohttp.ClientSession()
+            self.__session.cookie_jar.update_cookies(cookies)
     
     async def close_session(self) -> None:
         """Close the aiohttp session."""
@@ -84,9 +91,8 @@ class Client():
                     check: bool = False) -> Dict[str, Any] | None:
         """Connect to IMEON API using POST HTTP protocol."""
         url = self._IP
-
-        if self.__session is None or self.__session.closed:
-            await self.init_session()
+        
+        await self.init_session()
         session = self.__session
 
         # Build request payload
@@ -150,8 +156,7 @@ class Client():
             "Valid times are: 'minute', 'quarter', 'hour', 'day', 'week', 'month', 'year'"
         url = self._IP
         
-        if self.__session is None or self.__session.closed:
-            await self.init_session()
+        await self.keep_session_alive()
         session = self.__session
 
         urls = {
@@ -201,8 +206,7 @@ class Client():
         """
         url = self._IP
 
-        if self.__session is None or self.__session.closed:
-            await self.init_session()
+        await self.keep_session_alive()
         session = self.__session
 
         # Build request payload
@@ -230,8 +234,7 @@ class Client():
         """Gather relay and state data from IMEON API using GET HTTP protocol."""
         url = self._IP
 
-        if self.__session is None or self.__session.closed:
-            await self.init_session()
+        await self.keep_session_alive()
         session = self.__session
 
         # Build request payload
@@ -267,8 +270,7 @@ class Client():
         assert info_type in ('data', 'scan', 'status'), "Valid info types are: 'data', 'scan', 'status'"
         url = self._IP
 
-        if self.__session is None or self.__session.closed:
-            await self.init_session()
+        await self.keep_session_alive()
         session = self.__session
 
         # Build request payload
@@ -312,7 +314,7 @@ if __name__ == "__main__":
 
     # Tests
     async def dataset_test() -> dict:
-        c = Client("192.168.200.86")
+        c = Client("192.168.200.110")
 
         await c.login('user@local', 'password')
 
