@@ -75,7 +75,7 @@ class Client():
         try:
             task = await func(url, data=data)
         except Exception as e:
-            raise Exception(f"Task {func} failed: {e} \nRequest @ {url}")
+            raise Exception(f"Task {func} failed: {e} \nRequest @ {url}") from e
         start_time = await self._queue.get()
         end_time = time.perf_counter()
 
@@ -116,12 +116,12 @@ class Client():
                     return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
-            raise Exception(f"Error making POST request: {e} \nRequest @ {url}\nPayload   {data}")
+            raise Exception(f"Error making POST request: {e} \nRequest @ {url}\nPayload   {data}") from e
         except asyncio.TimeoutError:
             # Handle timeout
-            raise Exception("POST request timed out. Check the IP configuration of the inverter.")
+            raise Exception("POST request timed out. Check the IP configuration of the inverter.") from e
         except Exception as e:
-                raise Exception(f"POST request failed: {e} \nRequest @ {url}")
+            raise Exception(f"POST request failed: {e} \nRequest @ {url}") from e
     
     @timed
     async def get_data_onetime(self) -> Dict[str, float]:
@@ -185,12 +185,12 @@ class Client():
                         json[key]["result"] = loads(json[key]["result"])
             except aiohttp.ClientError as e:
                 # Handle client errors (e.g., connection issues)
-                raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
+                raise Exception(f"Error making GET request: {e} \nRequest @ {url}") from e
             except asyncio.TimeoutError:
                 # Handle timeout
-                raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+                raise Exception("GET request timed out. Check the IP configuration of the inverter.") from e
             except Exception as e:
-                raise Exception(f"GET request failed: {e} \nRequest @ {url}")
+                raise Exception(f"GET request failed: {e} \nRequest @ {url}") from e
         
         return json
 
@@ -222,12 +222,12 @@ class Client():
                     return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
-            raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
+            raise Exception(f"Error making GET request: {e} \nRequest @ {url}") from e
         except asyncio.TimeoutError:
             # Handle timeout
-            raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+            raise Exception("GET request timed out. Check the IP configuration of the inverter.") from e
         except Exception as e:
-            raise Exception(f"GET request failed: {e} \nRequest @ {url}")
+            raise Exception(f"GET request failed: {e} \nRequest @ {url}") from e
 
     @timed
     async def get_data_manager(self, timeout: int = TIMEOUT) -> Dict[str, float] | None: 
@@ -250,12 +250,12 @@ class Client():
                     return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
-            raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
+            raise Exception(f"Error making GET request: {e} \nRequest @ {url}") from e
         except asyncio.TimeoutError:
             # Handle timeout
-            raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+            raise Exception("GET request timed out. Check the IP configuration of the inverter.") from e
         except Exception as e:
-            raise Exception(f"GET request failed: {e} \nRequest @ {url}")
+            raise Exception(f"GET request failed: {e} \nRequest @ {url}") from e
 
     @timed
     async def get_data_instant(self, info_type: str = "data", 
@@ -287,12 +287,12 @@ class Client():
                     return json
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
-            raise Exception(f"Error making GET request: {e} \nRequest @ {url}")
+            raise Exception(f"Error making GET request: {e} \nRequest @ {url}") from e
         except asyncio.TimeoutError:
             # Handle timeout
-            raise Exception("GET request timed out. Check the IP configuration of the inverter.")
+            raise Exception("GET request timed out. Check the IP configuration of the inverter.") from e
         except Exception as e:
-            raise Exception(f"GET request failed: {e} \nRequest @ {url}")
+            raise Exception(f"GET request failed: {e} \nRequest @ {url}") from e
     
     # TODO post requests methods
 

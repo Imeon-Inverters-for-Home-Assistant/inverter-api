@@ -51,7 +51,7 @@ class Inverter():
                 await self._client.login(username, password)
                 self.__auth_valid = True
             except Exception as e:
-                raise Exception(f"Error while checking credentials: {e}")
+                raise Exception(f"Error while checking credentials: {e}") from e
             
     async def update(self) -> None:
         """Request a data update from the Client. Replaces older data, but doesn't affect "one-time" data."""
@@ -65,7 +65,7 @@ class Inverter():
             data_manager = await client.get_data_manager()
             data_timeline = await client.get_data_timeline()
         except Exception as e:
-            raise e
+            raise e from e
         
         for key in ["battery", "grid", "pv", "input", "output", "temp", "meter"]:
             storage[key] = data_timed.get(key, {}).get("result", {})
@@ -82,7 +82,7 @@ class Inverter():
             await self.update()
             data_inverter = await self._client.get_data_onetime()
         except Exception as e:
-            raise e
+            raise e from e
 
         self._storage["inverter"] = data_inverter
 
