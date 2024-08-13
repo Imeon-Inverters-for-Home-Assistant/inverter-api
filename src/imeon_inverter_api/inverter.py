@@ -86,7 +86,7 @@ class Inverter():
 
         self._storage["inverter"] = data_inverter
 
-    async def get_address(self) -> str | None:
+    def get_address(self) -> str | None:
         """Returns client IP."""
         return self._client._IP
 

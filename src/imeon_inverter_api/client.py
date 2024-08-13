@@ -6,6 +6,7 @@ from functools import wraps
 import time
 from json import loads, dumps
 
+
 # credit to : https://dev.to/kcdchennai/python-decorator-to-measure-execution-time-54hk
 def timed(func: Callable) -> Callable:
     """Measure time of execution for async functions."""
@@ -39,7 +40,7 @@ class Client():
         """Get the currently saved session."""
         return self.__session
 
-    async def init_session(self) -> None:
+    async def init_session(self, timeout: int = TIMEOUT) -> None:
         """Initialize the aiohttp session."""
         if self.__session is None or self.__session.closed:
             self.__session = aiohttp.ClientSession()
@@ -117,7 +118,7 @@ class Client():
         except aiohttp.ClientError as e:
             # Handle client errors (e.g., connection issues)
             raise Exception(f"Error making POST request: {e} \nRequest @ {url}\nPayload   {data}") from e
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as e:
             # Handle timeout
             raise Exception("POST request timed out. Check the IP configuration of the inverter.") from e
         except Exception as e:
@@ -295,6 +296,15 @@ class Client():
             raise Exception(f"GET request failed: {e} \nRequest @ {url}") from e
     
     # TODO post requests methods
+    def set_relay(self, input: bool, perform_save: bool = False, timeout: int = TIMEOUT): pass
+
+    def switch_relay(self, perform_save: bool = False, timeout: int = TIMEOUT): pass
+
+    def set_inverter_mode(self, mode: str | int, perform_save: bool = False, timeout: int = TIMEOUT): pass
+
+    def set_battery_mode(self, mode: bool, perform_save: bool = False, timeout: int = TIMEOUT): pass
+
+    def set_meter_offset(self, input: bool, perform_save: bool = False, timeout: int = TIMEOUT): pass
 
     # ASYNC HANDLERS #
     def __del__(self) -> None:
