@@ -16,7 +16,7 @@ A standalone API allowing communication with Imeon Energy inverters.
 
 
 ### Planned
-- changing inverter settings rom API calls
+- changing inverter settings from API calls
 
 ## Installation
 

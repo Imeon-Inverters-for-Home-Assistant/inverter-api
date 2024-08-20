@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     # Tests
     async def _test():
-        i = Inverter("192.168.200.86")
+        i = Inverter("192.168.200.110")
         await i.login("user@local", "password")
         await i.init()
         print(json.dumps(i._storage, indent=2, sort_keys=True))
