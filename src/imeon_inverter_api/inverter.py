@@ -1,7 +1,10 @@
+from typing import Literal, Tuple
+from typing_extensions import Annotated
+
 if __name__ == "__main__": 
-    from client import Client
+    from client import Client, _LOGGER
 else:
-    from imeon_inverter_api.client import Client
+    from imeon_inverter_api.client import Client, _LOGGER
 
 class Inverter():
 
@@ -11,6 +14,7 @@ class Inverter():
     supervision tools (such as Home Assistant).
 
         Note: for manual access, here's the storage structure
+            ```
             self._storage = {
                     "battery" : {},
                     "grid": {},
@@ -24,6 +28,7 @@ class Inverter():
                     "inverter": {},
                     "timeline": [{}]
                 }
+            ```
     """
 
     def __init__(self, address: str):
@@ -122,17 +127,71 @@ class Inverter():
 
     @property
     def timeline(self): return self._storage.get("timeline", [{}])
+
+
+    async def set_inverter_mode(self, mode: Literal['smg', 'bup', 'ong', 'ofg'] = 'smg') -> bool | None:
+        """Change the inverter mode to the given input."""
+        return await self._client.set_from_dict(inputs = {"inverter_mode": mode})
+
+    async def set_mppt(self, range: Tuple[int, int]) -> bool | None:
+        """Change the maximum power point tracking range to the given input."""
+        return await self._client.set_from_dict(inputs = {"mppt": range})
+
+    async def set_injection_power(self, value: Annotated[int, "0 <= x"]) -> bool | None:
+        """Change the injection power limit to the given input."""
+        return await self._client.set_from_dict(inputs = {"injection_power": value})
     
+    async def set_lcd_time(self, time: Annotated[int, "0 <= x <= 20"]) -> bool | None:
+        """Change the LCD screen sleep time to the given input."""
+        return await self._client.set_from_dict(inputs = {"lcd_time": time})
+    
+    async def set_date(self, date: Annotated[str, "Format: yyyy/mm/ddhh:mm"]) -> bool | None:
+        """Change the inverter date to the given input."""
+        return await self._client.set_from_dict(inputs = {"date": date})
+
+    async def set_feed_in(self, value: bool) -> bool | None:
+        """Activate/deactivate grid power injection."""
+        return await self._client.set_from_dict(inputs = {"feed_in": value})
+    
+    async def set_night_discharge(self, value: bool) -> bool | None:
+        """Activate/deactivate nightly discharge for the battery."""
+        return await self._client.set_from_dict(inputs = {"night_discharge": value})
+    
+    async def set_grid_charge(self, value: bool) -> bool | None:
+        """Activate/deactivate grid charge for the battery."""
+        return await self._client.set_from_dict(inputs = {"grid_charge": value})
+    
+    async def set_relay(self, value: bool) -> bool | None:
+        """Activate/deactivate the relay."""
+        return await self._client.set_from_dict(inputs = {"relay_active": value})
+    
+    async def set_ac_output(self, value: bool) -> bool | None:
+        """Activate/deactivate AC output."""
+        return await self._client.set_from_dict(inputs = {"ac_output_active": value})
+
+
+# ===== #
+# TESTS #
+# ===== #
             
 if __name__ == "__main__":
     import asyncio
     import json
 
-    # Tests
-    async def _test():
+    async def init_test():
         i = Inverter("192.168.200.110")
         await i.login("user@local", "password")
         await i.init()
-        print(json.dumps(i._storage, indent=2, sort_keys=True))
+        _LOGGER.debug(json.dumps(i._storage, indent=2, sort_keys=True))
+    
+    async def post_test():
+        i = Inverter("192.168.200.110")
+        await i.login("user@local", "password")
+        result = await i.set_inverter_mode('bup')
+        _LOGGER.debug(result)
 
-    asyncio.run(_test())
+    async def help_test():
+        help(Inverter)
+
+
+    asyncio.run(post_test())

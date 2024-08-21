@@ -194,7 +194,7 @@ class Client():
             "passwd": password
         }
 
-        @self.build_request(method="POST", url=url, data=data)
+        @self.build_request(method="POST", url=url, data=data, timeout=timeout)
         async def _request():
             json = await _request.response.json()
             if not check: 
@@ -227,7 +227,7 @@ class Client():
         url = urls[info_type]
         data = ""
         
-        @self.build_request(method="GET", url=url, data=data)
+        @self.build_request(method="GET", url=url, data=data, timeout=timeout)
         async def _request():
             json = await _request.response.json()
             return json
@@ -282,7 +282,7 @@ class Client():
         for key, url in urls.items():
             url = url + suffix
             
-            @self.build_request(method="GET", url=url, data=data)
+            @self.build_request(method="GET", url=url, data=data, timeout=timeout)
             async def _request():
                 json[key] = await _request.response.json()
                 json[key]["result"] = loads(json[key]["result"])
@@ -307,7 +307,7 @@ class Client():
         url = "http://" + url + "/api/monitor?time={}".format(time)
         data = ""
         
-        @self.build_request(method="GET", url=url, data=data)
+        @self.build_request(method="GET", url=url, data=data, timeout=timeout)
         async def _request():
             json = await _request.response.json()
             json["result"] = loads(json["result"])
@@ -324,7 +324,7 @@ class Client():
         url = "http://" + url + "/api/manager"
         data = ""
         
-        @self.build_request(method="GET", url=url, data=data)
+        @self.build_request(method="GET", url=url, data=data, timeout=timeout)
         async def _request():
             json = await _request.response.json()
             json["result"] = loads(json["result"])
@@ -335,39 +335,24 @@ class Client():
     # POST REQUESTS #
 
     @timed
-    async def set_inverter_mode(self, input: str | int, perform_save: bool = False, 
+    async def set_from_dict(self, inputs: dict, perform_save: bool = False, 
                   timeout: int = TIMEOUT) -> bool | None: 
         url = self._IP
 
         # Build request payload
         url = "http://" + url + "/api/set"
         data = FormData()
-        data.add_field('inverter_mode', input)
+        for k, v in inputs.items():
+            data.add_field(str(k), str(v))
         data.add_field('permasave', perform_save)
         
-        @self.build_request(method="POST", url=url, data=data)
+        @self.build_request(method="POST", url=url, data=data, timeout=timeout)
         async def _request():       
             text = await _request.response.text()
             return text
                 
         return await _request()
-
-    async def switch_relay(self, perform_save: bool = False, 
-                     timeout: int = TIMEOUT): 
-        pass
-
-    async def set_relay(self, input: bool, perform_save: bool = False, 
-                          timeout: int = TIMEOUT): 
-        pass
-
-    async def set_battery_mode(self, input: bool, perform_save: bool = False, 
-                         timeout: int = TIMEOUT): 
-        pass
-
-    async def set_meter_offset(self, input: bool, perform_save: bool = False, 
-                         timeout: int = TIMEOUT): 
-        pass
-        
+    
 # ===== #
 # TESTS #
 # ===== #
@@ -420,5 +405,5 @@ if __name__ == "__main__":
         async with Client("192.168.200.110") as c:
             await c.login('installer@local', 'Installer_P4SS')
 
-    asyncio.run(async_context_test())
+    asyncio.run(get_test())
     _LOGGER.debug('End of tests')    
