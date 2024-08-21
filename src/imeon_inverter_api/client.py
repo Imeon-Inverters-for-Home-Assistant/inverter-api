@@ -35,6 +35,7 @@ class Client():
     """
 
     TIMEOUT = 10           # seconds
+    TIMEOUT_POST = 20      # seconds
     BOTTLENECK = True      # Bottleneck acts as Rate Limiter
     BOTTLENECK_SIZE = 1    # "Queue" size 
     BOTTLENECK_RATE = 1.2  # seconds
@@ -243,6 +244,8 @@ class Client():
         json["serial"] = data["serial"]
         json["charging_current_limit"] = data["max_ac_charging_current"]
         json["injection_power_limit"] = data["injection_power"]
+        json["battery_night_discharge"] = (data["enable_status"].get("discharge_night") == "1")
+        json["battery_grid_charge"] = (data["enable_status"].get("charge_bat_with_grid") == "1")
         return json
     
     async def get_data_timeline(self) -> List[Dict[str, None]]:
@@ -336,8 +339,23 @@ class Client():
 
     @timed
     async def set_from_dict(self, inputs: dict, perform_save: bool = False, 
-                  timeout: int = TIMEOUT) -> bool | None: 
+                  timeout: int = TIMEOUT_POST) -> bool | None: 
         url = self._IP
+        """
+        Send data changes to IMEON API using HTTP POST.
+
+        "inputs" can contains the following fields:
+            inverter_mode   : <str> (smg | bup | ong | ofg) 
+            mppt            : [<int>, <int>]
+            feed_in         : <bool>
+            injection_power : <int>
+            lcd_time        : <int>
+            date            : <str> (yyyy/mm/ddhh:mm)
+            night_discharge : <bool>
+            grid_charge     : <bool>
+            relay_active    : <bool>
+            ac_output_active: <bool>
+        """
 
         # Build request payload
         url = "http://" + url + "/api/set"
@@ -394,7 +412,7 @@ if __name__ == "__main__":
 
         await c.login('installer@local', 'Installer_P4SS')
 
-        response = await c.set_inverter_mode('bup')
+        response = await c.set_from_dict({"relay_active": False})
         _LOGGER.debug(response)
 
     async def context_test() -> None:
