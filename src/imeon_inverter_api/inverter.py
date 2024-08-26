@@ -190,8 +190,9 @@ if __name__ == "__main__":
         result = await i.set_inverter_mode('bup')
         _LOGGER.debug(result)
 
-    async def help_test():
-        help(Inverter)
+    async def print_doc() -> None:
+        import pydoc
+        strhelp = pydoc.render_doc(Inverter, "Help on %s")
+        print(strhelp)
 
-
-    asyncio.run(post_test())
+    asyncio.run(print_doc())

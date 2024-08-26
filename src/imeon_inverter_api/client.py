@@ -340,7 +340,6 @@ class Client():
     @timed
     async def set_from_dict(self, inputs: dict, perform_save: bool = False, 
                   timeout: int = TIMEOUT_POST) -> bool | None: 
-        url = self._IP
         """
         Send data changes to IMEON API using HTTP POST.
 
@@ -358,6 +357,7 @@ class Client():
         """
 
         # Build request payload
+        url = self._IP
         url = "http://" + url + "/api/set"
         data = FormData()
         for k, v in inputs.items():
@@ -423,5 +423,10 @@ if __name__ == "__main__":
         async with Client("192.168.200.110") as c:
             await c.login('installer@local', 'Installer_P4SS')
 
-    asyncio.run(get_test())
+    async def print_doc() -> None:
+        import pydoc
+        strhelp = pydoc.render_doc(Client, "Help on %s")
+        print(strhelp)
+
+    asyncio.run(print_doc())
     _LOGGER.debug('End of tests')    
