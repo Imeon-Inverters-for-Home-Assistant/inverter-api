@@ -167,7 +167,7 @@ class Client():
                     raise Exception(f"Error making {method} request: {e} \nRequest @ {url}\nPayload   {data}") from e
                 except asyncio.TimeoutError as e:
                     # Handle timeout
-                    raise Exception(f"{method} request timed out. Check the IP configuration of the inverter.") from e
+                    raise TimeoutError(f"{method} request timed out. Check the IP configuration of the inverter.") from e
                 except Exception as e:
                     # Other errors go here
                     raise Exception(f"{method} request failed: {e} \nRequest @ {url}") from e
@@ -428,5 +428,5 @@ if __name__ == "__main__":
         strhelp = pydoc.render_doc(Client, "Help on %s")
         print(strhelp)
 
-    asyncio.run(print_doc())
+    asyncio.run(get_test())
     _LOGGER.debug('End of tests')    
