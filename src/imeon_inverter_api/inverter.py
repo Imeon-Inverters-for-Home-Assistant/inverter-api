@@ -185,7 +185,7 @@ if __name__ == "__main__":
     import json
 
     async def init_test():
-        i = Inverter("192.168.200.110")
+        i = Inverter("192.168.200.86")
         await i.login("user@local", "password")
         await i.init()
         _LOGGER.debug(json.dumps(i._storage, indent=2, sort_keys=True))
@@ -201,4 +201,4 @@ if __name__ == "__main__":
         strhelp = pydoc.render_doc(Inverter, "Help on %s")
         print(strhelp)
 
-    asyncio.run(print_doc())
+    asyncio.run(init_test())

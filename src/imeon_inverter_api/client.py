@@ -34,7 +34,7 @@ class Client():
     data through POST/GET requests. 
     """
 
-    TIMEOUT = 10           # seconds
+    TIMEOUT = 15           # seconds
     TIMEOUT_POST = 20      # seconds
     BOTTLENECK = True      # Bottleneck acts as Rate Limiter
     BOTTLENECK_SIZE = 1    # "Queue" size 
@@ -390,7 +390,7 @@ if __name__ == "__main__":
 
 
     async def get_test() -> dict:
-        c = Client("192.168.200.110")
+        c = Client("192.168.200.86")
 
         await c.login('user@local', 'password')
 
