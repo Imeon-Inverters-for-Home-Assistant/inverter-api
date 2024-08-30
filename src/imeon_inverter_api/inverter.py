@@ -45,7 +45,8 @@ class Inverter():
             "monitoring": {},
             "manager": {},
             "inverter": {},
-            "timeline": [{}]
+            "timeline": [{}],
+            "smartload": {}
         }
         return None
     
@@ -71,18 +72,20 @@ class Inverter():
             data_monitoring_minute = await client.get_data_monitoring(time='minute')
             data_manager = await client.get_data_manager()
             data_timeline = await client.get_data_timeline()
+            data_smartload = await client.get_data_smartload()
         except TimeoutError as e:
             raise TimeoutError from e
         except Exception as e:
             raise Exception from e
         
-        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter"]:
+        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter", "manager"]:
             storage[key] = data_timed.get(key, {}).get("result", {})
 
         storage["monitoring"] = data_monitoring.get("result", {})
         storage["monitoring_minute"] = data_monitoring_minute.get("result", {})
-        storage["manager"] = data_manager.get("result", {})
+        #storage["manager"] = data_manager.get("result", {})
         storage["timeline"] = data_timeline
+        storage["smartload"] = data_smartload
 
     
     async def init(self) -> None:
@@ -189,6 +192,12 @@ if __name__ == "__main__":
         await i.login("user@local", "password")
         await i.init()
         _LOGGER.debug(json.dumps(i._storage, indent=2, sort_keys=True))
+
+    async def update_test():
+        i = Inverter("192.168.200.86")
+        await i.login("user@local", "password")
+        await i.update()
+        _LOGGER.debug(json.dumps(i._storage, indent=2, sort_keys=True))
     
     async def post_test():
         i = Inverter("192.168.200.110")
@@ -201,4 +210,4 @@ if __name__ == "__main__":
         strhelp = pydoc.render_doc(Inverter, "Help on %s")
         print(strhelp)
 
-    asyncio.run(init_test())
+    asyncio.run(update_test())

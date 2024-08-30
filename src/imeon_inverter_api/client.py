@@ -335,6 +335,23 @@ class Client():
         
         return await _request()
     
+    @timed
+    async def get_data_smartload(self, timeout: int = TIMEOUT) -> Dict[str, float] | None: 
+        """Gather relay and state data from IMEON API using GET HTTP protocol."""
+        url = self._IP
+
+        # Build request payload
+        url = "http://" + url + "/api/smartload"
+        data = ""
+        
+        @self.build_request(method="GET", url=url, data=data, timeout=timeout)
+        async def _request():
+            json = await _request.response.json()
+            json["result"] = loads(json["result"])
+            return json
+        
+        return await _request()
+    
     # POST REQUESTS #
 
     @timed
@@ -423,10 +440,16 @@ if __name__ == "__main__":
         async with Client("192.168.200.110") as c:
             await c.login('installer@local', 'Installer_P4SS')
 
+    async def smartload_test() -> None:
+        with Client("192.168.200.86") as c:
+            await c.login("user@local", "password")
+            smtld = await c.get_data_smartload()
+            _LOGGER.debug(smtld)
+
     async def print_doc() -> None:
         import pydoc
         strhelp = pydoc.render_doc(Client, "Help on %s")
         print(strhelp)
 
-    asyncio.run(get_test())
+    asyncio.run(smartload_test())
     _LOGGER.debug('End of tests')    
