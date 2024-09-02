@@ -78,12 +78,12 @@ class Inverter():
         except Exception as e:
             raise Exception from e
         
-        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter", "manager"]:
+        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter"]:
             storage[key] = data_timed.get(key, {}).get("result", {})
 
         storage["monitoring"] = data_monitoring.get("result", {})
         storage["monitoring_minute"] = data_monitoring_minute.get("result", {})
-        #storage["manager"] = data_manager.get("result", {})
+        storage["manager"] = data_manager.get("result", {})
         storage["timeline"] = data_timeline
         storage["smartload"] = data_smartload
 
@@ -210,4 +210,4 @@ if __name__ == "__main__":
         strhelp = pydoc.render_doc(Inverter, "Help on %s")
         print(strhelp)
 
-    asyncio.run(update_test())
+    asyncio.run(init_test())

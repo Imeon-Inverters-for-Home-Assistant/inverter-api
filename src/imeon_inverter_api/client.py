@@ -451,5 +451,5 @@ if __name__ == "__main__":
         strhelp = pydoc.render_doc(Client, "Help on %s")
         print(strhelp)
 
-    asyncio.run(smartload_test())
+    asyncio.run(get_test())
     _LOGGER.debug('End of tests')    
