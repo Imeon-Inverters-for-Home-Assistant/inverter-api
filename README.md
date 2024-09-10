@@ -9,6 +9,10 @@ A standalone API allowing communication with Imeon Energy inverters.
 
 #
 
+### Requirements
+
+- Imeon OS One v1.8.1.0+ (release end of 2024).
+
 ### Features
 - uses HTTP POST/GET (auth + read-only)
 - compatible with all models
