@@ -1,5 +1,5 @@
 import aiohttp
-from aiohttp import FormData
+from aiohttp import FormData, client_exceptions
 import logging
 import asyncio
 from typing import Any, Dict, Callable, List, Literal
@@ -124,6 +124,10 @@ class Client():
         # Call function with proper error handling
         try:
             task = await func(url, data=data)
+        except client_exceptions.ClientConnectorDNSError as e:
+            raise ValueError(f"Host invalid: {e}") from e
+        except client_exceptions.ClientConnectorError as e:
+            raise ValueError(f"Route invalid: {e}")
         except Exception as e:
             raise Exception(f"Task {func} failed: {e} \nRequest @ {url}") from e
         
@@ -168,6 +172,9 @@ class Client():
                 except asyncio.TimeoutError as e:
                     # Handle timeout
                     raise TimeoutError(f"{method} request timed out. Check the IP configuration of the inverter.") from e
+                except ValueError as e:
+                    # Handle invalid host or invalid route
+                    raise ValueError(e) from e
                 except Exception as e:
                     # Other errors go here
                     raise Exception(f"{method} request failed: {e} \nRequest @ {url}") from e

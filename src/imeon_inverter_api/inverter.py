@@ -26,10 +26,17 @@ class Inverter():
                     "monitoring": {},
                     "manager": {},
                     "inverter": {},
-                    "timeline": [{}]
+                    "timeline": [{}],
+                    "smartload": {}
                 }
             ```
     """
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_t, exc_v, exc_tb):
+        await self._client.close_session()
 
     def __init__(self, address: str):
         self._client = Client(address)
@@ -50,14 +57,17 @@ class Inverter():
         }
         return None
     
-    async def login(self, username: str, password: str) -> None:
+    async def login(self, username: str, password: str) -> bool:
         """Request client login. See Client documentation for more details."""
         if self.__auth_valid == False:
             try:
-                await self._client.login(username, password)
+                response = await self._client.login(username, password)
                 self.__auth_valid = True
+                return response['accessGranted']
             except TimeoutError as e:
                 raise TimeoutError from e
+            except ValueError as e:
+                raise ValueError(e) from e
             except Exception as e:
                 raise Exception from e
             
@@ -137,6 +147,12 @@ class Inverter():
     @property
     def timeline(self): return self._storage.get("timeline", [{}])
 
+    @property
+    def smartload(self): return self._storage.get("smartload", {})
+
+    @property
+    def storage(self): return self._storage
+
 
     async def set_inverter_mode(self, mode: Literal['smg', 'bup', 'ong', 'ofg'] = 'smg') -> bool | None:
         """Change the inverter mode to the given input."""
@@ -188,19 +204,19 @@ if __name__ == "__main__":
     import json
 
     async def init_test():
-        i = Inverter("192.168.200.86")
+        i = Inverter("192.168.200.184")
         await i.login("user@local", "password")
         await i.init()
-        _LOGGER.debug(json.dumps(i._storage, indent=2, sort_keys=True))
+        _LOGGER.debug(json.dumps(i.storage, indent=2, sort_keys=True))
 
     async def update_test():
         i = Inverter("192.168.200.86")
         await i.login("user@local", "password")
         await i.update()
-        _LOGGER.debug(json.dumps(i._storage, indent=2, sort_keys=True))
+        _LOGGER.debug(json.dumps(i.storage, indent=2, sort_keys=True))
     
     async def post_test():
-        i = Inverter("192.168.200.110")
+        i = Inverter("192.168.200.86")
         await i.login("user@local", "password")
         result = await i.set_inverter_mode('bup')
         _LOGGER.debug(result)
