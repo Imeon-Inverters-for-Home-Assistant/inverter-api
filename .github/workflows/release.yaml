@@ -37,7 +37,7 @@ jobs:
       id-token: write
     environment:
       name: pypi
-      url: https://pypi.org/project/YOURPROJECT/imeon-${{ github.event.release.name }}
+      url: https://pypi.org/project/imeon-${{ github.event.release.name }}
 
     steps:
       - name: Retrieve release distributions
