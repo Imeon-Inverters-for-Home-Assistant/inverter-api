@@ -37,7 +37,7 @@ jobs:
       id-token: write
     environment:
       name: pypi
-      url: https://pypi.org/project/imeon-inverter-api
+      url: https://pypi.org/project/imeon-inverter-api/${{ github.event.release.name }}
 
     steps:
       - name: Retrieve release distributions
