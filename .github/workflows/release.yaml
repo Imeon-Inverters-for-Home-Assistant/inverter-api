@@ -36,8 +36,8 @@ jobs:
     permissions:
       id-token: write
     environment:
-      name: pypi
-      url: https://pypi.org/project/imeon-inverter-api
+      name: release
+      url: https://pypi.org/p/imeon-inverter-api
 
     steps:
       - name: Retrieve release distributions
