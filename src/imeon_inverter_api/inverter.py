@@ -114,6 +114,11 @@ class Inverter():
         """Returns client IP."""
         return self._client._IP
 
+    async def get_serial(self) -> str:
+        """Returns inverter serial."""
+        serial = await self._client.get_serial()
+        return serial
+
     @property
     def battery(self): return self._storage.get("battery", {})
 
@@ -210,13 +215,13 @@ if __name__ == "__main__":
         _LOGGER.debug(json.dumps(i.storage, indent=2, sort_keys=True))
 
     async def update_test():
-        i = Inverter("192.168.200.86")
+        i = Inverter("192.168.200.184")
         await i.login("user@local", "password")
         await i.update()
         _LOGGER.debug(json.dumps(i.storage, indent=2, sort_keys=True))
     
     async def post_test():
-        i = Inverter("192.168.200.86")
+        i = Inverter("192.168.200.184")
         await i.login("user@local", "password")
         result = await i.set_inverter_mode('bup')
         _LOGGER.debug(result)

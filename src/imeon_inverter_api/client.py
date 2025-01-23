@@ -242,6 +242,11 @@ class Client():
         
         return await _request()
 
+    async def get_serial(self) -> str:
+        """Get the inverter serial."""
+        data = await self.get_data_instant("data")
+        return data["serial"]
+
     async def get_data_onetime(self) -> Dict[str, float]:
         """Gather one-time data from IMEON API using GET HTTP protocol."""
         data = await self.get_data_instant("data")
@@ -406,7 +411,7 @@ if __name__ == "__main__":
 
 
     async def login_test() -> None:
-        c = Client("192.168.200.110")
+        c = Client("192.168.200.184")
 
         response = await c.login('installer@local', 'Installer_P4SS')
 
@@ -414,7 +419,7 @@ if __name__ == "__main__":
 
 
     async def get_test() -> dict:
-        c = Client("192.168.200.86")
+        c = Client("192.168.200.184")
 
         await c.login('user@local', 'password')
 
@@ -432,7 +437,7 @@ if __name__ == "__main__":
 
 
     async def post_test() -> None:
-        c = Client("192.168.200.110")
+        c = Client("192.168.200.184")
 
         await c.login('installer@local', 'Installer_P4SS')
 
@@ -440,15 +445,15 @@ if __name__ == "__main__":
         _LOGGER.debug(response)
 
     async def context_test() -> None:
-        with Client("192.168.200.110") as c:
+        with Client("192.168.200.184") as c:
             await c.login('installer@local', 'Installer_P4SS')
 
     async def async_context_test() -> None:
-        async with Client("192.168.200.110") as c:
+        async with Client("192.168.200.184") as c:
             await c.login('installer@local', 'Installer_P4SS')
 
     async def smartload_test() -> None:
-        with Client("192.168.200.86") as c:
+        with Client("192.168.200.184") as c:
             await c.login("user@local", "password")
             smtld = await c.get_data_smartload()
             _LOGGER.debug(smtld)
