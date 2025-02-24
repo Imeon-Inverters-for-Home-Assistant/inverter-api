@@ -116,8 +116,11 @@ class Inverter():
 
     async def get_serial(self) -> str:
         """Returns inverter serial."""
-        serial = await self._client.get_serial()
-        return serial
+        try:
+            serial = await self._client.get_serial()
+            return serial
+        except TimeoutError as e:
+            raise TimeoutError from e
 
     @property
     def battery(self): return self._storage.get("battery", {})
