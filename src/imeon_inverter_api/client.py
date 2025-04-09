@@ -168,7 +168,7 @@ class Client():
                     
                 except aiohttp.ClientError as e:
                     # Handle client errors (e.g., connection issues)
-                    raise Exception(f"Error making {method} request: {e} \nRequest @ {url}\nPayload   {data}") from e
+                    raise  aiohttp.ClientError(f"Error making {method} request: {e} \nRequest @ {url}\nPayload   {data}") from e
                 except asyncio.TimeoutError as e:
                     # Handle timeout
                     raise TimeoutError(f"{method} request timed out. Check the IP configuration of the inverter.") from e

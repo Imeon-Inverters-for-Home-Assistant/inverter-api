@@ -1,5 +1,6 @@
 from typing import Literal, Tuple
 from typing_extensions import Annotated
+from aiohttp import ClientError
 
 if __name__ == "__main__": 
     from client import Client, _LOGGER
@@ -85,6 +86,10 @@ class Inverter():
             data_smartload = await client.get_data_smartload()
         except TimeoutError as e:
             raise TimeoutError from e
+        except ClientError as e:
+            raise ClientError from e
+        except ValueError as e:
+            raise ValueError from e
         except Exception as e:
             raise Exception from e
         
