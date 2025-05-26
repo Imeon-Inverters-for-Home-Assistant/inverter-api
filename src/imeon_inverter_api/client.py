@@ -260,12 +260,6 @@ class Client():
         json["battery_grid_charge"] = (data["enable_status"].get("charge_bat_with_grid") == "1")
         return json
 
-    async def get_data_timeline(self) -> List[Dict[str, None]]:
-        """Gather timeline data from IMEON API using GET HTTP protocol."""
-        data = await self.get_data_instant("status")
-        list = data.get("state_timeline", {}).get("detail", [{}])
-        return list
-
     @timed
     async def get_data_timed(self, time: str = 'minute',
                              timeout: int = TIMEOUT) -> Dict[str, float] | None:
@@ -287,6 +281,7 @@ class Client():
             "output"  : "http://" + url + "/api/output?threephase=true",
             "meter"   : "http://" + url + "/api/em",
             "temp"    : "http://" + url + "/api/temp",
+            "timeline": "http://" + url + "/api/timeline",
             "energy"  : "http://" + url + "/api/energy"
             }
         suffix = "?time={}".format(time)
@@ -430,7 +425,6 @@ if __name__ == "__main__":
         data.append(await c.get_data_manager())
         data.append(await c.get_data_monitoring('minute'))
         data.append(await c.get_data_monitoring())
-        data.append(await c.get_data_timeline())
 
         for datum in data:
             d = dumps(datum, indent=2, sort_keys=True)
