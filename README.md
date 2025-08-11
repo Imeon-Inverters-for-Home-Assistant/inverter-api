@@ -11,7 +11,8 @@ A standalone API allowing communication with Imeon Energy inverters.
 
 ### Requirements
 
-- Imeon OS One v1.8.1.0+ (release end of 2024).
+- Imeon OS One v1.8.1.0+ (released in January 2025).
+- ETH port only (WiFi connection has no NAT feature).
 
 ### Features
 - uses HTTP POST/GET (auth + read-only)
