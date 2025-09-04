@@ -118,23 +118,18 @@ class Client():
         await self._queue.put(time.perf_counter())
 
     async def task(self, func: Callable, url: str, data: str) -> Any | None:
-        """Simple bottleneck without queue."""
-        start_time = time.perf_counter()
+        """Bottleneck with proper queue cleanup."""
+        await self._bottleneck
 
+        start_time = None
         try:
-            result = await func(url, data=data)
-        except client_exceptions.ClientConnectorDNSError as e:
-            raise ValueError(f"Host invalid: {e}") from e
-        except client_exceptions.ClientConnectorError as e:
-            raise ValueError(f"Route invalid: {e}")
-        except Exception as e:
-            raise Exception(f"Task {func} failed: {e} \nRequest @ {url}") from e
+            start_time = await self._queue.get()
+            task_result = await func(url, data=data)
+            return task_result
         finally:
-            elapsed = time.perf_counter() - start_time
-            wait_time = max(self.BOTTLENECK_RATE - elapsed, 0)
-            await asyncio.sleep(wait_time)
-
-        return result
+            if start_time is not None:
+                elapsed = time.perf_counter() - start_time
+                await asyncio.sleep(max(self.BOTTLENECK_RATE - elapsed, 0))
 
     def build_request(self, *, method : Literal['POST', 'GET'] = 'GET',
                       url: str, data: str | FormData, timeout: float = TIMEOUT) -> Callable:
