@@ -44,7 +44,7 @@ class Client():
     def __init__(self, ip: str):
         self._IP : str = ip
         self.__session : aiohttp.ClientSession | None = None
-        self._queue : asyncio.Queue = asyncio.Queue(self.BOTTLENECK_SIZE)
+        self._queue : asyncio.Queue = asyncio.Queue(self.BOTTLENECK_SIZE) # used like a semaphore
 
     def __del__(self) -> None:
         """Close client connection when this object is destroyed."""
