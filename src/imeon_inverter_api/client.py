@@ -126,6 +126,12 @@ class Client():
             start_time = await self._queue.get()
             task_result = await func(url, data=data)
             return task_result
+        except client_exceptions.ClientConnectorDNSError as e:
+            raise ValueError(f"Host invalid: {e}") from e
+        except client_exceptions.ClientConnectorError as e:
+            raise ValueError(f"Route invalid: {e}")
+        except Exception as e:
+            raise Exception(f"Task {func} failed: {e} \nRequest @ {url}") from e
         finally:
             if start_time is not None:
                 elapsed = time.perf_counter() - start_time
