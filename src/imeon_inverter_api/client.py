@@ -90,11 +90,8 @@ class Client():
             self.__session = aiohttp.ClientSession()
 
     async def keep_session_alive(self) -> None:
-        """Keep an aiohttp session alive and pass down cookies through sessions."""
-        if self.__session.closed:
-            cookies = self.get_session_cookies()
+        if not self.__session or self.__session.closed:
             self.__session = aiohttp.ClientSession()
-            self.__session.cookie_jar.update_cookies(cookies)
 
     async def close_session(self) -> None:
         """Close the current aiohttp session."""
@@ -137,15 +134,16 @@ class Client():
                 elapsed = time.perf_counter() - start_time
                 await asyncio.sleep(max(self.BOTTLENECK_RATE - elapsed, 0))
 
-    def build_request(self, *, method : Literal['POST', 'GET'] = 'GET',
-                      url: str, data: str | FormData, timeout: float = TIMEOUT) -> Callable:
-        """Decorate async requests with automatic timeout and error handling."""
+    def build_request(self, *, method: Literal['POST', 'GET'] = 'GET',
+                  url: str, data: str | FormData, timeout: float = TIMEOUT) -> Callable:
+        """Decorate async requests with automatic timeout, session handling and error checks."""
 
         def __decorator__(func: Callable):
 
             @wraps(func)
-            async def __wrapper__(**kwargs) -> ... :
-                _LOGGER.debug(f"| Request Wrapper: {url} {str(data)[:50] + ' ...' if len(str(data))>50 else str(data)}")
+            async def __wrapper__(**kwargs) -> ...:
+                _LOGGER.debug(f"| Request Wrapper: {url} "
+                              f"{str(data)[:50] + ' ...' if len(str(data))>50 else str(data)}")
 
                 # Check for session
                 await self.keep_session_alive()
@@ -157,26 +155,38 @@ class Client():
                     call_task = asyncio.create_task(task)
                     task_result = await asyncio.wait_for(call_task, timeout)
 
-                    # Handle timeouts through async context managers
                     async with task_result as response:
-                        __wrapper__.response = response # Store response as a function attribute
+                        __wrapper__.response = response
+
+                        ctype = response.headers.get("Content-Type", "").lower()
+                        if "application/json" not in ctype:
+                            text_preview = await response.text()
+                            raise aiohttp.ClientError(
+                                f"Unexpected response type: {ctype}. "
+                                f"Likely session expired or login required.\n"
+                                f"URL={url}\nPayload={data}\nResponse={text_preview[:200]}..."
+                            )
+
                         return await func(**kwargs)
 
                 except aiohttp.ClientError as e:
-                    # Handle client errors (e.g., connection issues)
-                    raise  aiohttp.ClientError(f"Error making {method} request: {e} \nRequest @ {url}\nPayload   {data}") from e
+                    raise aiohttp.ClientError(
+                        f"Error making {method} request: {e}\nRequest @ {url}\nPayload {data}"
+                    ) from e
                 except asyncio.TimeoutError as e:
-                    # Handle timeout
-                    raise TimeoutError(f"{method} request timed out. Check the IP configuration of the inverter.") from e
+                    raise TimeoutError(
+                        f"{method} request timed out. Check the IP configuration of the inverter."
+                    ) from e
                 except ValueError as e:
-                    # Handle invalid host or invalid route
                     raise ValueError(e) from e
                 except Exception as e:
-                    # Other errors go here
-                    raise Exception(f"{method} request failed: {e} \nRequest @ {url}") from e
+                    raise Exception(
+                        f"{method} request failed: {e}\nRequest @ {url}"
+                    ) from e
 
             return __wrapper__
         return __decorator__
+
 
     # =============== #
     # IMEON API CALLS #

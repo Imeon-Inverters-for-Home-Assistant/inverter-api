@@ -65,14 +65,17 @@ class Inverter():
         if self.__auth_valid == False:
             try:
                 response = await self._client.login(username, password)
-                self.__auth_valid = True
-                return response['accessGranted']
+                self.__auth_valid = response.get("accessGranted", False)
+                return self.__auth_valid
             except TimeoutError as e:
-                raise TimeoutError from e
+                self.__auth_valid = False
+                raise TimeoutError(e) from e
             except ValueError as e:
+                self.__auth_valid = False
                 raise ValueError(e) from e
             except Exception as e:
-                raise Exception from e
+                self.__auth_valid = False
+                raise Exception(e) from e
 
     async def update(self) -> None:
         """Request a data update from the Client. Replaces older data, but doesn't affect "one-time" data."""
@@ -81,18 +84,21 @@ class Inverter():
 
         try:
             data_timed = await client.get_data_timed()
-            data_monitoring = await client.get_data_monitoring(time='hour')
-            data_monitoring_minute = await client.get_data_monitoring(time='minute')
+            data_monitoring = await client.get_data_monitoring(time="hour")
+            data_monitoring_minute = await client.get_data_monitoring(time="minute")
             data_manager = await client.get_data_manager()
             data_smartload = await client.get_data_smartload()
         except TimeoutError as e:
-            raise TimeoutError from e
+            raise TimeoutError(e) from e
         except ClientError as e:
-            raise ClientError from e
+            self.__auth_valid = False
+            raise ClientError(e) from e
         except ValueError as e:
-            raise ValueError from e
+            self.__auth_valid = False
+            raise ValueError(e) from e
         except Exception as e:
-            raise Exception from e
+            self.__auth_valid = False
+            raise Exception(e) from e
 
         for key in ["battery", "grid", "pv", "input", "output", "temp", "meter", "timeline", "energy"]:
             storage[key] = data_timed.get(key, {}).get("result", {})
