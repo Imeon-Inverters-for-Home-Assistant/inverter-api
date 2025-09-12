@@ -288,7 +288,8 @@ class Client():
             "meter"   : "http://" + url + "/api/em",
             "temp"    : "http://" + url + "/api/temp",
             "timeline": "http://" + url + "/api/timeline",
-            "energy"  : "http://" + url + "/api/energy"
+            "energy"  : "http://" + url + "/api/energy",
+            "forecast"  : "http://" + url + "/api/forecast"
             }
         suffix = "?time={}".format(time)
         data = ""

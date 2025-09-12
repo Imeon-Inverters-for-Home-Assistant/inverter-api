@@ -30,6 +30,7 @@ class Inverter():
                     "timeline": {},
                     "smartload": {},
                     "energy": {}
+                    "forecast": {}
                 }
             ```
     """
@@ -56,7 +57,8 @@ class Inverter():
             "inverter": {},
             "timeline": {},
             "smartload": {},
-            "energy": {}
+            "energy": {},
+            "forecast": {}
         }
         return None
 
@@ -100,7 +102,7 @@ class Inverter():
             self.__auth_valid = False
             raise Exception(e) from e
 
-        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter", "timeline", "energy"]:
+        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter", "timeline", "energy", "forecast"]:
             storage[key] = data_timed.get(key, {}).get("result", {})
 
         storage["monitoring"] = data_monitoring.get("result", {})
@@ -171,6 +173,9 @@ class Inverter():
 
     @property
     def energy(self): return self._storage.get("energy", {})
+
+    @property
+    def forecast(self): return self._storage.get("forecast", {})
 
     @property
     def storage(self): return self._storage
