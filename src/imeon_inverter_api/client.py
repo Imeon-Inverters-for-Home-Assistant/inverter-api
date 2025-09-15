@@ -2,49 +2,57 @@ import aiohttp
 from aiohttp import FormData, client_exceptions
 import logging
 import asyncio
-from typing import Any, Dict, Callable, List, Literal
+from typing import Any, Dict, Callable, Literal
 from functools import wraps
 import time
 from json import loads, dumps
 
 _LOGGER = logging.getLogger(__name__)
-logging.basicConfig(encoding='utf-8',
-                    level=logging.DEBUG,
-                    format='%(levelname)s %(asctime)s : %(message)s') # filename=f'{__name__}.log',
+logging.basicConfig(
+    encoding="utf-8",
+    level=logging.DEBUG,
+    format="%(levelname)s %(asctime)s : %(message)s",
+)  # filename=f'{__name__}.log',
+
 
 # credit to : https://dev.to/kcdchennai/python-decorator-to-measure-execution-time-54hk
 def timed(func: Callable) -> Callable:
     """Measure time of execution for async functions."""
+
     @wraps(func)
-    async def time_wrapper(*args, **kwargs) -> ... :
+    async def time_wrapper(*args, **kwargs) -> ...:
         start_time = time.perf_counter()
-        _LOGGER.debug(f'Function {func.__qualname__}{args} {kwargs} call starts now')
+        _LOGGER.debug(f"Function {func.__qualname__}{args} {kwargs} call starts now")
         result = await func(*args, **kwargs)
         end_time = time.perf_counter()
         total_time = end_time - start_time
-        _LOGGER.debug(f'Function {func.__qualname__}{args} {kwargs} took {total_time:.4f} seconds\n')
+        _LOGGER.debug(
+            f"Function {func.__qualname__}{args} {kwargs} took {total_time:.4f} seconds\n"
+        )
         return result
+
     return time_wrapper
 
 
-class Client():
-
+class Client:
     """
     Client to connect to securely connect to the inverter and request
     data through POST/GET requests.
     """
 
-    TIMEOUT = 15           # seconds
-    TIMEOUT_POST = 20      # seconds
-    BOTTLENECK = True      # Bottleneck acts as Rate Limiter
-    BOTTLENECK_SIZE = 1    # "Queue" size
+    TIMEOUT = 15  # seconds
+    TIMEOUT_POST = 20  # seconds
+    BOTTLENECK = True  # Bottleneck acts as Rate Limiter
+    BOTTLENECK_SIZE = 1  # "Queue" size
     BOTTLENECK_RATE = 1.2  # seconds
-    DEPRECATED_API = False # Use only the older API methods
+    DEPRECATED_API = False  # Use only the older API methods
 
-    def __init__(self, ip: str):
-        self._IP : str = ip
-        self.__session : aiohttp.ClientSession | None = None
-        self._queue : asyncio.Queue = asyncio.Queue(self.BOTTLENECK_SIZE) # used like a semaphore
+    def __init__(self, ip: str, session: aiohttp.ClientSession):
+        self._IP: str = ip
+        self.__session: session | None = None
+        self._queue: asyncio.Queue = asyncio.Queue(
+            self.BOTTLENECK_SIZE
+        )  # used like a semaphore
 
     def __del__(self) -> None:
         """Close client connection when this object is destroyed."""
@@ -55,11 +63,13 @@ class Client():
             else:
                 loop.run_until_complete(self.close_session())
         except RuntimeError:
-            asyncio.run(self.close_session()) # Hideous workaround not using context managers
+            asyncio.run(
+                self.close_session()
+            )  # Hideous workaround not using context managers
         except Exception as e:
             _LOGGER.error(f"Error while closing: {e}")
         finally:
-            _LOGGER.debug(f"Closed Client session")
+            _LOGGER.debug("Closed Client session")
 
     async def __adel__(self) -> None:
         """Close client connection when this object is destroyed (async)."""
@@ -78,7 +88,6 @@ class Client():
 
     async def __aexit__(self, exc_t, exc_v, exc_tb):
         await self.__adel__()
-
 
     async def get_session(self) -> aiohttp.ClientSession | None:
         """Get the currently saved session."""
@@ -134,24 +143,34 @@ class Client():
                 elapsed = time.perf_counter() - start_time
                 await asyncio.sleep(max(self.BOTTLENECK_RATE - elapsed, 0))
 
-    def build_request(self, *, method: Literal['POST', 'GET'] = 'GET',
-                  url: str, data: str | FormData, timeout: float = TIMEOUT) -> Callable:
+    def build_request(
+        self,
+        *,
+        method: Literal["POST", "GET"] = "GET",
+        url: str,
+        data: str | FormData,
+        timeout: float = TIMEOUT,
+    ) -> Callable:
         """Decorate async requests with automatic timeout, session handling and error checks."""
 
         def __decorator__(func: Callable):
-
             @wraps(func)
             async def __wrapper__(**kwargs) -> ...:
-                _LOGGER.debug(f"| Request Wrapper: {url} "
-                              f"{str(data)[:50] + ' ...' if len(str(data))>50 else str(data)}")
+                _LOGGER.debug(
+                    f"| Request Wrapper: {url} "
+                    f"{str(data)[:50] + ' ...' if len(str(data)) > 50 else str(data)}"
+                )
 
                 # Check for session
                 await self.keep_session_alive()
 
                 try:
                     # Do POST/GET request and store the response with timeout
-                    task = self.task(self.__session.post, url, data) if method == 'POST' \
-                           else self.task(self.__session.get, url, data)
+                    task = (
+                        self.task(self.__session.post, url, data)
+                        if method == "POST"
+                        else self.task(self.__session.get, url, data)
+                    )
                     call_task = asyncio.create_task(task)
                     task_result = await asyncio.wait_for(call_task, timeout)
 
@@ -185,16 +204,17 @@ class Client():
                     ) from e
 
             return __wrapper__
-        return __decorator__
 
+        return __decorator__
 
     # =============== #
     # IMEON API CALLS #
     # =============== #
 
     @timed
-    async def login(self, username: str, password: str, timeout: int = TIMEOUT,
-                    check: bool = False) -> Dict[str, Any] | None:
+    async def login(
+        self, username: str, password: str, timeout: int = TIMEOUT, check: bool = False
+    ) -> Dict[str, Any] | None:
         """Connect to IMEON API using POST HTTP protocol."""
         url = self._IP
 
@@ -202,11 +222,7 @@ class Client():
 
         # Build request payload
         url = "http://" + url + "/login"
-        data = {
-            "do_login" : not check,
-            "email" : username,
-            "passwd": password
-        }
+        data = {"do_login": not check, "email": username, "passwd": password}
 
         @self.build_request(method="POST", url=url, data=data, timeout=timeout)
         async def _request():
@@ -222,8 +238,9 @@ class Client():
     # POST REQUESTS #
 
     @timed
-    async def get_data_instant(self, info_type: str = "data",
-                               timeout: int = TIMEOUT) -> Dict[str, Any] | Any | None:
+    async def get_data_instant(
+        self, info_type: str = "data", timeout: int = TIMEOUT
+    ) -> Dict[str, Any] | Any | None:
         """
         Gather instant data from IMEON API using GET HTTP protocol.
 
@@ -231,13 +248,17 @@ class Client():
                   it is advised to only use this when you need all
                   the collected data quickly.
         """
-        assert info_type in ('data', 'scan', 'status'), "Valid info types are: 'data', 'scan', 'status'"
+        assert info_type in ("data", "scan", "status"), (
+            "Valid info types are: 'data', 'scan', 'status'"
+        )
         url = self._IP
 
         # Build request payload
-        urls = {"data"  : "http://" + url + "/data",
-                "scan"  : "http://" + url + "/scan?scan_time=&single=true",
-                "status": "http://" + url + "/imeon-status"}
+        urls = {
+            "data": "http://" + url + "/data",
+            "scan": "http://" + url + "/scan?scan_time=&single=true",
+            "status": "http://" + url + "/imeon-status",
+        }
         url = urls[info_type]
         data = ""
 
@@ -262,13 +283,18 @@ class Client():
         json["serial"] = data["serial"]
         json["charging_current_limit"] = data["max_ac_charging_current"]
         json["injection_power_limit"] = data["injection_power"]
-        json["battery_night_discharge"] = (data["enable_status"].get("discharge_night") == "1")
-        json["battery_grid_charge"] = (data["enable_status"].get("charge_bat_with_grid") == "1")
+        json["battery_night_discharge"] = (
+            data["enable_status"].get("discharge_night") == "1"
+        )
+        json["battery_grid_charge"] = (
+            data["enable_status"].get("charge_bat_with_grid") == "1"
+        )
         return json
 
     @timed
-    async def get_data_timed(self, time: str = 'minute',
-                             timeout: int = TIMEOUT) -> Dict[str, float] | None:
+    async def get_data_timed(
+        self, time: str = "minute", timeout: int = TIMEOUT
+    ) -> Dict[str, float] | None:
         """
         Gather minute data from IMEON API using GET HTTP protocol.
 
@@ -276,21 +302,21 @@ class Client():
                   get_data_instant() if you're interested in collecting
                   a lot of data at once.
         """
-        assert time in ('minute', 'quarter'), "Valid times are: 'minute', 'quarter'"
+        assert time in ("minute", "quarter"), "Valid times are: 'minute', 'quarter'"
         url = self._IP
 
         urls = {
-            "battery" : "http://" + url + "/api/battery",
-            "grid"    : "http://" + url + "/api/grid?threephase=true",
-            "pv"      : "http://" + url + "/api/pv",
-            "input"   : "http://" + url + "/api/input",
-            "output"  : "http://" + url + "/api/output?threephase=true",
-            "meter"   : "http://" + url + "/api/em",
-            "temp"    : "http://" + url + "/api/temp",
+            "battery": "http://" + url + "/api/battery",
+            "grid": "http://" + url + "/api/grid?threephase=true",
+            "pv": "http://" + url + "/api/pv",
+            "input": "http://" + url + "/api/input",
+            "output": "http://" + url + "/api/output?threephase=true",
+            "meter": "http://" + url + "/api/em",
+            "temp": "http://" + url + "/api/temp",
             "timeline": "http://" + url + "/api/timeline",
-            "energy"  : "http://" + url + "/api/energy",
-            "forecast"  : "http://" + url + "/api/forecast"
-            }
+            "energy": "http://" + url + "/api/energy",
+            "forecast": "http://" + url + "/api/forecast",
+        }
         suffix = "?time={}".format(time)
         data = ""
 
@@ -310,8 +336,9 @@ class Client():
         return json
 
     @timed
-    async def get_data_monitoring(self, time="hour",
-                                  timeout: int = TIMEOUT) -> Dict[str, float] | None:
+    async def get_data_monitoring(
+        self, time="hour", timeout: int = TIMEOUT
+    ) -> Dict[str, float] | None:
         """
         Gather monitoring data from IMEON API using GET HTTP protocol.
 
@@ -351,7 +378,9 @@ class Client():
         return await _request()
 
     @timed
-    async def get_data_smartload(self, timeout: int = TIMEOUT) -> Dict[str, float] | None:
+    async def get_data_smartload(
+        self, timeout: int = TIMEOUT
+    ) -> Dict[str, float] | None:
         """Gather relay and state data from IMEON API using GET HTTP protocol."""
         url = self._IP
 
@@ -370,8 +399,9 @@ class Client():
     # POST REQUESTS #
 
     @timed
-    async def set_from_dict(self, inputs: dict, perform_save: bool = False,
-                  timeout: int = TIMEOUT_POST) -> bool | None:
+    async def set_from_dict(
+        self, inputs: dict, perform_save: bool = False, timeout: int = TIMEOUT_POST
+    ) -> bool | None:
         """
         Send data changes to IMEON API using HTTP POST.
 
@@ -394,7 +424,7 @@ class Client():
         data = FormData()
         for k, v in inputs.items():
             data.add_field(str(k), str(v))
-        data.add_field('permasave', perform_save)
+        data.add_field("permasave", perform_save)
 
         @self.build_request(method="POST", url=url, data=data, timeout=timeout)
         async def _request():
@@ -403,6 +433,7 @@ class Client():
 
         return await _request()
 
+
 # ===== #
 # TESTS #
 # ===== #
@@ -410,49 +441,46 @@ class Client():
 if __name__ == "__main__":
     import asyncio
 
-    _LOGGER.debug('Start of tests\n')
-
+    _LOGGER.debug("Start of tests\n")
 
     async def login_test() -> None:
         c = Client("192.168.200.184")
 
-        response = await c.login('installer@local', 'Installer_P4SS')
+        response = await c.login("installer@local", "Installer_P4SS")
 
         _LOGGER.debug(response)
-
 
     async def get_test() -> dict:
         c = Client("192.168.200.184")
 
-        await c.login('user@local', 'password')
+        await c.login("user@local", "password")
 
         data = []
         data.append(await c.get_data_onetime())
-        data.append(await c.get_data_timed('quarter'))
+        data.append(await c.get_data_timed("quarter"))
         data.append(await c.get_data_manager())
-        data.append(await c.get_data_monitoring('minute'))
+        data.append(await c.get_data_monitoring("minute"))
         data.append(await c.get_data_monitoring())
 
         for datum in data:
             d = dumps(datum, indent=2, sort_keys=True)
             _LOGGER.debug(d)
 
-
     async def post_test() -> None:
         c = Client("192.168.200.184")
 
-        await c.login('installer@local', 'Installer_P4SS')
+        await c.login("installer@local", "Installer_P4SS")
 
         response = await c.set_from_dict({"relay_active": False})
         _LOGGER.debug(response)
 
     async def context_test() -> None:
         with Client("192.168.200.184") as c:
-            await c.login('installer@local', 'Installer_P4SS')
+            await c.login("installer@local", "Installer_P4SS")
 
     async def async_context_test() -> None:
         async with Client("192.168.200.184") as c:
-            await c.login('installer@local', 'Installer_P4SS')
+            await c.login("installer@local", "Installer_P4SS")
 
     async def smartload_test() -> None:
         with Client("192.168.200.184") as c:
@@ -462,8 +490,9 @@ if __name__ == "__main__":
 
     async def print_doc() -> None:
         import pydoc
+
         strhelp = pydoc.render_doc(Client, "Help on %s")
         print(strhelp)
 
     asyncio.run(get_test())
-    _LOGGER.debug('End of tests')
+    _LOGGER.debug("End of tests")

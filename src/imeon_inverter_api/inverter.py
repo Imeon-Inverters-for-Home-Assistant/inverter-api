@@ -1,14 +1,14 @@
 from typing import Literal, Tuple
 from typing_extensions import Annotated
-from aiohttp import ClientError
+from aiohttp import ClientError, ClientSession
 
 if __name__ == "__main__":
     from client import Client, _LOGGER
 else:
     from imeon_inverter_api.client import Client, _LOGGER
 
-class Inverter():
 
+class Inverter:
     """
     Client data organised as a class storing the collected data,
     with methods allowing periodical updates. Meant for use in
@@ -41,11 +41,11 @@ class Inverter():
     async def __aexit__(self, exc_t, exc_v, exc_tb):
         await self._client.close_session()
 
-    def __init__(self, address: str):
-        self._client = Client(address)
+    def __init__(self, address: str, session: ClientSession) -> None:
+        self._client = Client(address, session)
         self.__auth_valid = False
         self._storage = {
-            "battery" : {},
+            "battery": {},
             "grid": {},
             "pv": {},
             "input": {},
@@ -58,13 +58,13 @@ class Inverter():
             "timeline": {},
             "smartload": {},
             "energy": {},
-            "forecast": {}
+            "forecast": {},
         }
         return None
 
     async def login(self, username: str, password: str) -> bool:
         """Request client login. See Client documentation for more details."""
-        if self.__auth_valid == False:
+        if not self.__auth_valid:
             try:
                 response = await self._client.login(username, password)
                 self.__auth_valid = response.get("accessGranted", False)
@@ -102,14 +102,24 @@ class Inverter():
             self.__auth_valid = False
             raise Exception(e) from e
 
-        for key in ["battery", "grid", "pv", "input", "output", "temp", "meter", "timeline", "energy", "forecast"]:
+        for key in [
+            "battery",
+            "grid",
+            "pv",
+            "input",
+            "output",
+            "temp",
+            "meter",
+            "timeline",
+            "energy",
+            "forecast",
+        ]:
             storage[key] = data_timed.get(key, {}).get("result", {})
 
         storage["monitoring"] = data_monitoring.get("result", {})
         storage["monitoring_minute"] = data_monitoring_minute.get("result", {})
         storage["manager"] = data_manager.get("result", {})
         storage["smartload"] = data_smartload
-
 
     async def init(self) -> None:
         """Request a data initialisation from the Client. Collects "one-time" data."""
@@ -136,90 +146,108 @@ class Inverter():
             raise TimeoutError from e
 
     @property
-    def battery(self): return self._storage.get("battery", {})
+    def battery(self):
+        return self._storage.get("battery", {})
 
     @property
-    def grid(self): return self._storage.get("grid", {})
+    def grid(self):
+        return self._storage.get("grid", {})
 
     @property
-    def pv(self): return self._storage.get("pv", {})
+    def pv(self):
+        return self._storage.get("pv", {})
 
     @property
-    def input(self): return self._storage.get("input", {})
+    def input(self):
+        return self._storage.get("input", {})
 
     @property
-    def output(self): return self._storage.get("output", {})
+    def output(self):
+        return self._storage.get("output", {})
 
     @property
-    def meter(self): return self._storage.get("meter", {})
+    def meter(self):
+        return self._storage.get("meter", {})
 
     @property
-    def temp(self): return self._storage.get("temp", {})
+    def temp(self):
+        return self._storage.get("temp", {})
 
     @property
-    def monitoring(self): return self._storage.get("monitoring", {})
+    def monitoring(self):
+        return self._storage.get("monitoring", {})
 
     @property
-    def manager(self): return self._storage.get("manager", {})
+    def manager(self):
+        return self._storage.get("manager", {})
 
     @property
-    def inverter(self): return self._storage.get("inverter", {})
+    def inverter(self):
+        return self._storage.get("inverter", {})
 
     @property
-    def timeline(self): return self._storage.get("timeline", {})
+    def timeline(self):
+        return self._storage.get("timeline", {})
 
     @property
-    def smartload(self): return self._storage.get("smartload", {})
+    def smartload(self):
+        return self._storage.get("smartload", {})
 
     @property
-    def energy(self): return self._storage.get("energy", {})
+    def energy(self):
+        return self._storage.get("energy", {})
 
     @property
-    def forecast(self): return self._storage.get("forecast", {})
+    def forecast(self):
+        return self._storage.get("forecast", {})
 
     @property
-    def storage(self): return self._storage
+    def storage(self):
+        return self._storage
 
-
-    async def set_inverter_mode(self, mode: Literal['smg', 'bup', 'ong', 'ofg'] = 'smg') -> bool | None:
+    async def set_inverter_mode(
+        self, mode: Literal["smg", "bup", "ong", "ofg"] = "smg"
+    ) -> bool | None:
         """Change the inverter mode to the given input."""
-        return await self._client.set_from_dict(inputs = {"inverter_mode": mode})
+        return await self._client.set_from_dict(inputs={"inverter_mode": mode})
 
     async def set_mppt(self, range: Tuple[int, int]) -> bool | None:
         """Change the maximum power point tracking range to the given input."""
-        return await self._client.set_from_dict(inputs = {"mppt": range})
+        return await self._client.set_from_dict(inputs={"mppt": range})
 
     async def set_injection_power(self, value: Annotated[int, "0 <= x"]) -> bool | None:
         """Change the injection power limit to the given input."""
-        return await self._client.set_from_dict(inputs = {"injection_power": value})
+        return await self._client.set_from_dict(inputs={"injection_power": value})
 
     async def set_lcd_time(self, time: Annotated[int, "0 <= x <= 20"]) -> bool | None:
         """Change the LCD screen sleep time to the given input."""
-        return await self._client.set_from_dict(inputs = {"lcd_time": time})
+        return await self._client.set_from_dict(inputs={"lcd_time": time})
 
-    async def set_date(self, date: Annotated[str, "Format: yyyy/mm/ddhh:mm"]) -> bool | None:
+    async def set_date(
+        self, date: Annotated[str, "Format: yyyy/mm/ddhh:mm"]
+    ) -> bool | None:
         """Change the inverter date to the given input."""
-        return await self._client.set_from_dict(inputs = {"date": date})
+        return await self._client.set_from_dict(inputs={"date": date})
 
     async def set_feed_in(self, value: bool) -> bool | None:
         """Activate/deactivate grid power injection."""
-        return await self._client.set_from_dict(inputs = {"feed_in": value})
+        return await self._client.set_from_dict(inputs={"feed_in": value})
 
     async def set_night_discharge(self, value: bool) -> bool | None:
         """Activate/deactivate nightly discharge for the battery."""
-        return await self._client.set_from_dict(inputs = {"night_discharge": value})
+        return await self._client.set_from_dict(inputs={"night_discharge": value})
 
     async def set_grid_charge(self, value: bool) -> bool | None:
         """Activate/deactivate grid charge for the battery."""
-        return await self._client.set_from_dict(inputs = {"grid_charge": value})
+        return await self._client.set_from_dict(inputs={"grid_charge": value})
 
     async def set_relay(self, value: bool) -> bool | None:
         """Activate/deactivate the relay."""
-        return await self._client.set_from_dict(inputs = {"relay_active": value})
+        return await self._client.set_from_dict(inputs={"relay_active": value})
 
     async def set_ac_output(self, value: bool) -> bool | None:
         """Activate/deactivate AC output."""
-        return await self._client.set_from_dict(inputs = {"ac_output_active": value})
+        return await self._client.set_from_dict(inputs={"ac_output_active": value})
 
 
 # ===== #
@@ -245,11 +273,12 @@ if __name__ == "__main__":
     async def post_test():
         i = Inverter("192.168.200.184")
         await i.login("user@local", "password")
-        result = await i.set_inverter_mode('bup')
+        result = await i.set_inverter_mode("bup")
         _LOGGER.debug(result)
 
     async def print_doc() -> None:
         import pydoc
+
         strhelp = pydoc.render_doc(Inverter, "Help on %s")
         print(strhelp)
 
